@@ -6,7 +6,7 @@ console.log(envPath)
 dotenv.config({path: envPath})
 
 export const SECRETS = {
-    PORT: process.env.PORT || 3000,
+    PORT: process.env.PORT,
     env: NODE_ENV,
     var1: process.env.test
 }
