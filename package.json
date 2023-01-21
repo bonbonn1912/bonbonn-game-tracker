@@ -1,0 +1,35 @@
+{
+  "name": "bonbonn-game-tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsc &&export NODE_ENV=dev&&node build/index.js",
+    "start": "tsc &&cd frontend&& npm run build&& cd ..&& node build/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bonbonn1912/bonbonn-game-tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bonbonn1912/bonbonn-game-tracker/issues"
+  },
+  "homepage": "https://github.com/bonbonn1912/bonbonn-game-tracker#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.19.2",
+    "@types/cors": "^2.8.13",
+    "@types/dotenv": "^8.2.0",
+    "@types/express": "^4.17.15",
+    "@types/node": "^18.11.18",
+    "typescript": "^4.9.4"
+  }
+}
