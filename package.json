@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsc &&export NODE_ENV=dev&&node build/index.js",
-    "start": "tsc &&cd frontend&& npm run build&& cd ..&& node build/index.js",
+    "prod": "tsc &&cd frontend&& npm run build&& cd ..&& node build/index.js",
     "heroku": "npm install&&cd frontend &&npm install &&npm run build && cd .. &&tsc&& node build/index.js"
   },
   "repository": {
