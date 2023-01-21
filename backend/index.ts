@@ -23,6 +23,6 @@ server.get("/*", (req: Request, res: Response) =>{
 })
 
 console.log(SECRETS.var1)
-server.listen(3000, () =>{console.log("Server listening on port 3000")})
+server.listen(SECRETS.PORT, () =>{console.log(`Server listening on port ${SECRETS.PORT}`)})
 
 
