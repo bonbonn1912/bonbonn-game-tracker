@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev1": "set NODE_ENV=dev&&set ts_node=true&&nodemon --exec ts-node backend/index.ts",
-    "dev": "tsc &&set NODE_ENV=dev&&node build/index.js",
+    "dev": "export NODE_ENV=dev&&export ts_node=true&&nodemon --exec ts-node backend/index.ts",
     "prod": "tsc &&cd frontend&& npm run build&& cd ..&& node build/index.js",
     "heroku": "npm install&&cd frontend &&npm install &&npm run build && cd .. &&tsc&& node build/index.js"
   },

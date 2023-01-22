@@ -130,3 +130,5 @@ build
 *.env
 
 *.txt
+
+*.DS_Store
