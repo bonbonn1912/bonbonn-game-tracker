@@ -22,5 +22,11 @@ export const SECRETS = {
         steam64Id: '^[0-9]{17}$',
         faceitId : '^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$',
         faceitUsername: '^[a-zA-Z0-9_-]{3,12}$',
+    },
+    mongo:{
+        connectionString: process.env.mongoString,
+        dbName: process.env.mongoDbName,
+        playerCollectionName: process.env.mongoPlayerCollectionName,
+        timeoutAfter: { serverSelectionTimeoutMS: 1000 },
     }
 }

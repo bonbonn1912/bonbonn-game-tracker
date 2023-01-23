@@ -1,3 +1,5 @@
+import { Mongoose, Schema, model } from "mongoose";
+
 export default interface faceitElo {
     username: string,
     isMax: boolean,
@@ -6,3 +8,5 @@ export default interface faceitElo {
     eloToNextLevel?: number,
     responseString: string,
 }
+
+

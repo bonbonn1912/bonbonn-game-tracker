@@ -1,5 +1,4 @@
-import faceitElo from "./level"
-
+import faceitElo, {faceitEloSchema} from "./level"
 
 export default interface faceitPlayerReponse {
     local: faceitElo,
@@ -12,10 +11,10 @@ export default interface faceitPlayerReponse {
     games: games,
 }
 
-
 interface platform {
-    steam: string
+    steam?: string
 }
+
 interface games {
     csgo: csgo
 }
@@ -27,3 +26,4 @@ interface csgo {
     faceit_elo: number,
     game_player_name: string,
 }
+
