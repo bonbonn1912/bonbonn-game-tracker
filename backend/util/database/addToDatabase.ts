@@ -1,4 +1,4 @@
-import mongoose, { model} from "mongoose";
+import mongoose, { model } from "mongoose";
 import faceitPlayerReponse from "../../@types/player";
 import { playerSchema } from "./Schema/playerSchema";
 import { SECRETS } from "../../config/env";

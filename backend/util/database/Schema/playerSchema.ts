@@ -1,6 +1,5 @@
 import faceitPlayerReponse from "../../../@types/player";
 import faceitElo from "../../../@types/level";
-
 import mongoose from "mongoose";
 import { InsertType } from "../../../@types/insertTypes";
 
