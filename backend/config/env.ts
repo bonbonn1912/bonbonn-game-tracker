@@ -17,5 +17,10 @@ export const SECRETS = {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer '+ process.env.apiKey 
         }
+    }, 
+    regex : {
+        steam64Id: '^[0-9]{17}$',
+        faceitId : '^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$',
+        faceitUsername: '^[a-zA-Z0-9_-]{3,12}$',
     }
 }

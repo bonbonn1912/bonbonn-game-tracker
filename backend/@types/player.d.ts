@@ -1,4 +1,8 @@
+import faceitElo from "./level"
+
+
 export default interface faceitPlayerReponse {
+    local: faceitElo,
     player_id: string,
     nickname: string,
     avatar: string,

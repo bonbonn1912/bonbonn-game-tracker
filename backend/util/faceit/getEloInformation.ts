@@ -6,6 +6,7 @@ const faceitRankInformation = (player: faceitPlayerReponse): faceitElo => {
   let elo = player.games.csgo.faceit_elo;
   let baseLevel: number = 1;
   let rankInformation: faceitElo = {
+    responseString: "",
     username: player.nickname,
     isMax: false,
     level: 0,

@@ -7,14 +7,16 @@ import { faceitRankInformation } from "../../util/faceit/getEloInformation"
 import { eloReponse } from "../../util/faceit/createResponseString"
 
 const getFaceitElo = async (req: Request, res: Response, next: NextFunction) =>{
+    
     try{
-        let player: faceitPlayerReponse = await getFaceitPlayer(req.query.username as string)
+        let player: faceitPlayerReponse = await getFaceitPlayer(req.query.username as string, req.query.id as string)
         let rankInformation: faceitElo = faceitRankInformation(player)
-        let responseString: string = eloReponse(rankInformation)
-        req.responseString = responseString
+        rankInformation.responseString = eloReponse(rankInformation)
+        player.local = rankInformation
+        req.player = player
         next()
     }catch{
-        res.status(404).send("Invalid username")
+        res.status(404).send("Invalid username / steam64 id / faceit id")
     }   
 }
 
