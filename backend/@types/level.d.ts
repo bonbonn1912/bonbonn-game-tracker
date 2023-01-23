@@ -1,5 +1,6 @@
 export default interface faceitElo {
-    isMax: boolean
+    username: string,
+    isMax: boolean,
     level: number, 
     elo: number,
     eloToNextLevel?: number

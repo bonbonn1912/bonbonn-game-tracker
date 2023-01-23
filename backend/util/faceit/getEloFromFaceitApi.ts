@@ -1,6 +1,6 @@
 import { SECRETS } from "../../config/env"
 
-import faceitPlayerReponse from "../../types/player"
+import faceitPlayerReponse from "../../@types/player"
 
 
 const getFaceitPlayer = async (username: string) : Promise<faceitPlayerReponse> =>{

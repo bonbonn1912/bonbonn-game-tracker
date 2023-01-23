@@ -1,9 +1,12 @@
-import faceitElo from "../../types/level";
+import faceitElo from "../../@types/level";
+import faceitPlayerReponse from "../../@types/player";
 
-const faceitRankInformation = (elo: number): faceitElo => {
-  let baseElo: number = elo - 800;
+const faceitRankInformation = (player: faceitPlayerReponse): faceitElo => {
+  let baseElo: number = player.games.csgo.faceit_elo - 800;
+  let elo = player.games.csgo.faceit_elo;
   let baseLevel: number = 1;
   let rankInformation: faceitElo = {
+    username: player.nickname,
     isMax: false,
     level: 0,
     elo: elo,
@@ -24,7 +27,7 @@ const faceitRankInformation = (elo: number): faceitElo => {
       rankInformation.isMax = false;
       rankInformation.elo = elo;
       rankInformation.level = Math.floor(level) + 2;
-      rankInformation.eloToNextLevel = eloNeeded(elo, Math.floor(level) + 2);
+      rankInformation.eloToNextLevel = eloNeeded(player.games.csgo.faceit_elo, Math.floor(level) + 2);
     }
   }
   return rankInformation;
