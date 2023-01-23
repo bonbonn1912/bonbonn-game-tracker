@@ -8,4 +8,14 @@ const eloReponse = (rankInformation: faceitElo) : string =>{
     }
 }
 
-export { eloReponse }
+const appendHistory = (matchHistory: string[]) : string =>{
+    if(matchHistory.length == 0){
+        return ""
+    }
+    let winLose = matchHistory.reverse().map(result => result == "1" ? "W/" : "L/")
+    let winLoseString = ".Last 5 Games: "+winLose.join("")
+    return winLoseString.substring(0, winLoseString.length-1)
+
+}
+
+export { eloReponse, appendHistory }

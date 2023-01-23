@@ -2,6 +2,7 @@ import faceitPlayerReponse from "../../../@types/player";
 import faceitElo from "../../../@types/level";
 
 import mongoose from "mongoose";
+import { InsertType } from "../../../@types/insertTypes";
 
 const faceitEloSchema = new mongoose.Schema<faceitElo>({
     username: String,
@@ -28,6 +29,7 @@ const platformSchema = new mongoose.Schema ({
     steam: String, 
 })
 const playerSchema = new mongoose.Schema<faceitPlayerReponse>({
+    insertType: { type: String, required: true},
     local: { type: faceitEloSchema, required: true},
     player_id: { type: String, required: true},
     nickname: String,
@@ -35,7 +37,8 @@ const playerSchema = new mongoose.Schema<faceitPlayerReponse>({
     country: String,
     cover_image: String,
     platforms: platformSchema,
-    games: gamesSchema
+    games: gamesSchema,
+    matchHistory: [{type: String, required: false}]
 })
 
 export { playerSchema }

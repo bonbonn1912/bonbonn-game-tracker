@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction} from "express"
 
-import faceitPlayerReponse from "../../@types/player"
+import faceitPlayerReponse, { faceitMatchHistory} from "../../@types/player"
 import faceitElo from "../../@types/level"
 import { getFaceitPlayer } from "../../util/faceit/getEloFromFaceitApi"
+import { getLastFiveGames } from "../../util/faceit/getLastFiveGames"
 import { faceitRankInformation } from "../../util/faceit/getEloInformation"
-import { eloReponse } from "../../util/faceit/createResponseString"
+import { eloReponse, appendHistory } from "../../util/faceit/createResponseString"
 
 const getFaceitElo = async (req: Request, res: Response, next: NextFunction) =>{
     
@@ -20,5 +21,17 @@ const getFaceitElo = async (req: Request, res: Response, next: NextFunction) =>{
     }   
 }
 
-export { getFaceitElo}
+const getLastFive = async (req: Request, res: Response, next: NextFunction) =>{
+    try{
+        let lastFiveGames = await getLastFiveGames(req.player.player_id as string)
+        req.player.local.responseString += appendHistory(lastFiveGames)
+        req.player.matchHistory = lastFiveGames
+    }catch{
+        req.player.matchHistory = [""]
+    }
+    next()
+}
+
+
+export { getFaceitElo, getLastFive }
    

@@ -1,6 +1,8 @@
 import faceitElo, {faceitEloSchema} from "./level"
+import { InsertType } from "../util/database/Schema/insertTypes"
 
 export default interface faceitPlayerReponse {
+    insertType?: InsertType,
     local: faceitElo,
     player_id: string,
     nickname: string,
@@ -9,6 +11,7 @@ export default interface faceitPlayerReponse {
     cover_image: string,
     platforms: platform,
     games: games,
+    matchHistory? : string[]
 }
 
 interface platform {
@@ -26,4 +29,14 @@ interface csgo {
     faceit_elo: number,
     game_player_name: string,
 }
+
+interface faceitMatchHistory {
+    lifetime: lifetime
+}
+
+interface lifetime {
+    "Recent Results": string[]
+}
+
+export { faceitMatchHistory }
 
