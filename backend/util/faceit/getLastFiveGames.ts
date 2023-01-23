@@ -1,6 +1,6 @@
 import { SECRETS } from "../../config/env"
 
-import faceitPlayerReponse, {faceitMatchHistory} from "../../@types/player"
+import {faceitMatchHistory} from "../../@types/player"
 
 
 const getLastFiveGames = async (faceitId: string) : Promise<string[]> =>{

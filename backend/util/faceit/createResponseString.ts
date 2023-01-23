@@ -8,14 +8,23 @@ const eloReponse = (rankInformation: faceitElo) : string =>{
     }
 }
 
-const appendHistory = (matchHistory: string[]) : string =>{
+const appendHistory = (matchHistory: string[], firstPart: string) : string =>{
     if(matchHistory.length == 0){
         return ""
     }
     let winLose = matchHistory.reverse().map(result => result == "1" ? "W/" : "L/")
-    let winLoseString = ".Last 5 Games: "+winLose.join("")
+    let winLoseString = firstPart + winLose.join("")
     return winLoseString.substring(0, winLoseString.length-1)
 
 }
 
-export { eloReponse, appendHistory }
+const appendWinRate = (matchHistory: string[]) =>{
+    if(matchHistory.length == 0){
+        return ""
+    }
+    const arraySum: number = matchHistory.map(el => parseInt(el)).reduce((curr: number, prev: number) => curr+prev)
+    let winrate: number = (arraySum/matchHistory.length);
+    return `. Winrate: ${Math.floor(winrate*100)}%`
+}
+
+export { eloReponse, appendHistory, appendWinRate }

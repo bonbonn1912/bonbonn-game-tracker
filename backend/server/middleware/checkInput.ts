@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction} from "express"
-import { validFaceitUsername, validSteam64Id, validFaceitId } from "../../util/validRequestParameter"
+import { validFaceitUsername, validSteam64Id, validFaceitId, validLimit } from "../../util/validRequestParameter"
 import { SECRETS } from "../../config/env"
 
 
@@ -32,4 +32,14 @@ const checkEloByFaceitIdInput = (req: Request, res: Response, next: NextFunction
     next();
 }
 
-export { checkEloInput, checkEloBySteamIdInput, checkEloByFaceitIdInput }
+const checkMatchHistoryInput = (req: Request, res: Response, next: NextFunction) =>{
+    let username: any = req.query.username
+    let limit: any = req.query.limit
+    if(username == undefined || limit == undefined || !validFaceitUsername(username) || !validLimit(limit)){
+        res.status(404).send("Incorrect faceit username or invalid limit (4-100)")
+        return;
+    }
+    next();
+}
+
+export { checkEloInput, checkEloBySteamIdInput, checkEloByFaceitIdInput, checkMatchHistoryInput }

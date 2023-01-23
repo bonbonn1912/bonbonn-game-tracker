@@ -15,8 +15,11 @@ const validFaceitId = (faceitid: string): boolean => {
     return regexp.test(faceitid)
 }
 
-const LimitParameter = (request: any) : boolean =>{
-    return isNaN(request);
+const validLimit = (request: any) : boolean =>{
+    if(!isNaN(request) && parseInt(request) > 3 && parseInt(request) < 101){ 
+            return true
+    }
+   return false
 }
 
-export {validFaceitUsername, LimitParameter, validSteam64Id, validFaceitId}
+export {validFaceitUsername, validSteam64Id, validFaceitId, validLimit}

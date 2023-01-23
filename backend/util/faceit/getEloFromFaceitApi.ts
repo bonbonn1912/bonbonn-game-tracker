@@ -12,7 +12,7 @@ const getFaceitPlayer = async (username: string, id?: string) : Promise<faceitPl
             method: "GET", 
             headers: SECRETS.faceit.header
     })
-        let player: faceitPlayerReponse = await responseRaw.json()
+    let player: faceitPlayerReponse = await responseRaw.json()
     return player; 
 }
 
