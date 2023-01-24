@@ -24,7 +24,6 @@ const validateAuthorizationHeader = (req: Request, res: Response, next: NextFunc
     }else{
         res.send("Invalid Authorization Header")
     }
-    
 }
 
 const addEloInformation = async (req: Request, res: Response, next: NextFunction) =>{
