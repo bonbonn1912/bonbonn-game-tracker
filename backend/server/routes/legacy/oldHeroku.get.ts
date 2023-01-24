@@ -2,11 +2,10 @@ import { Router, Request, Response} from "express";
 
 
 
-import { checkEloInput, checkEloBySteamIdInput, checkEloByFaceitIdInput, checkMatchHistoryInput } from "../middleware/checkInput";
-import { getCustomHistory, getFaceitElo, getLastFive } from "../middleware/elo";
-import { addPlayerToDB } from "../../util/database/addToDatabase";
-import { InsertType } from "../../@types/insertTypes";
-import { getCustomFaceitHistory } from "../../util/faceit/getCustomHistory";
+import { checkEloInput, checkEloBySteamIdInput, checkEloByFaceitIdInput, checkMatchHistoryInput } from "../../middleware/checkInput";
+import { getCustomHistory, getFaceitElo, getLastFive } from "../../middleware/elo";
+import { addPlayerToDB } from "../../../util/database/addToDatabase";
+import { InsertType } from "../../../@types/insertTypes";
 
 const faceitRouter: Router = Router();
 

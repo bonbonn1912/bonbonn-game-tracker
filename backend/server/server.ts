@@ -4,7 +4,7 @@ import path from 'path'
 import cors from 'cors'
 
 import defaultRouter from './routes/default'
-import faceitRouter  from './routes/faceit'
+import faceitRouter  from './routes/legacy/oldHeroku.get'
 
 const server = express()
 
