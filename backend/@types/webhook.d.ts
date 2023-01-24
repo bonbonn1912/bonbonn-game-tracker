@@ -1,4 +1,4 @@
-import { event } from "./event";
+import { event } from './event'
 
 export default interface webHookBody {
     transaction_id : string,
@@ -16,7 +16,7 @@ interface payload {
     id: string,
     organizer_id: string
     region: string,
-    game: "csgo",
+    game: 'csgo',
     version: number,
     entity: entity
     teams: team[],
@@ -53,4 +53,4 @@ interface player {
     anticheat_required: boolean
 }
 
-export { payload, entity, team , player}
+export { payload, entity, team, player }

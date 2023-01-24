@@ -1,4 +1,4 @@
-import faceitPlayerReponse from "../player";
+import faceitPlayerReponse from '../player'
 
 declare global {
   namespace Express {
