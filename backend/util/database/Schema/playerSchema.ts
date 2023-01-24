@@ -1,7 +1,6 @@
 import faceitPlayerReponse from "../../../@types/player";
 import faceitElo from "../../../@types/level";
 import mongoose from "mongoose";
-import { InsertType } from "../../../@types/insertTypes";
 
 const faceitEloSchema = new mongoose.Schema<faceitElo>({
     username: String,

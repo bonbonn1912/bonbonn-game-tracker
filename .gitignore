@@ -132,3 +132,5 @@ build
 *.txt
 
 *.DS_Store
+
+examples

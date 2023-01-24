@@ -27,6 +27,7 @@ export const SECRETS = {
         connectionString: process.env.mongoString,
         dbName: process.env.mongoDbName,
         playerCollectionName: process.env.mongoPlayerCollectionName,
+        matchRoomCollectionName: process.env.mongoMatchroomCollectionName,
         timeoutAfter: { serverSelectionTimeoutMS: 1000 },
     }
 }
