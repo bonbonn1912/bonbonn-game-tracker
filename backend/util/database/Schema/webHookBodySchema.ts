@@ -41,6 +41,23 @@ const payLoadSchema = new mongoose.Schema<payload>({
   teams: [teamSchema]
 })
 
+
+
+const firstTeamSchema = new mongoose.Schema({
+   name: String,
+   avgElo: Number,
+})
+
+const secondTeamSchema = new mongoose.Schema({
+   name: String,
+   avgElo: Number,
+})
+
+const matchupSchema = new mongoose.Schema( {
+  team1 : firstTeamSchema,
+  team2: secondTeamSchema,
+})
+
 const webHookBodySchema = new mongoose.Schema({
   transaction_id: String,
   event: { type: String, enum: ['match_status_created', 'match_status_configuring', 'match_status_finished', 'match_status_cancelled'] },
@@ -50,7 +67,10 @@ const webHookBodySchema = new mongoose.Schema({
   timestamp: String,
   retry_count: Number,
   version: Number,
-  payload: payLoadSchema
+  payload: payLoadSchema,
+  map: { type: String, required: true},
+  matchup : { type: matchupSchema, required: true},
+  streamer: { type: String, required: true}
 })
 
 export { webHookBodySchema }

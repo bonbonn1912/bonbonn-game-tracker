@@ -1,15 +1,14 @@
 import { type Request, type Response, type NextFunction } from 'express'
 
 import type faceitPlayerReponse from '../../@types/player'
-import { faceitMatchHistory } from '../../@types/player'
 import type faceitElo from '../../@types/level'
-import { getFaceitPlayer } from '../../util/faceit/getEloFromFaceitApi'
-import { getLastFiveGames } from '../../util/faceit/getLastFiveGames'
+import { getFaceitPlayer } from '../../util/faceit/player/getEloFromFaceitApi'
+import { getLastFiveGames } from '../../util/faceit/player/getLastFiveGames'
 import { faceitRankInformation } from '../../util/faceit/getEloInformation'
-import { eloReponse, appendHistory, appendWinRate } from '../../util/faceit/createResponseString'
-import { getCustomFaceitHistory } from '../../util/faceit/getCustomHistory'
-import { faction1, faction2, type matchHistory } from '../../@types/customHistory'
-import { isWinnerFaction } from '../../util/faceit/isWinnerFaction'
+import { eloReponse, appendHistory, appendWinRate } from '../../util/createResponseString'
+import { getCustomFaceitHistory } from '../../util/faceit/player/getCustomHistory'
+import { type matchHistory } from '../../@types/customHistory'
+import { isWinnerFaction } from '../../util/isWinnerFaction'
 
 const getFaceitElo = async (req: Request, res: Response, next: NextFunction) => {
   try {

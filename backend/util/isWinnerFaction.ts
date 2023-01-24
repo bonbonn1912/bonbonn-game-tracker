@@ -1,4 +1,4 @@
-import { type faction1, type faction2, type singlePlayer } from '../../@types/customHistory'
+import { type faction1, type faction2, type singlePlayer } from '../@types/customHistory'
 
 const isWinnerFaction = (player_id: string, winnerFaction: faction1 | faction2) => {
   let winner: boolean = false
