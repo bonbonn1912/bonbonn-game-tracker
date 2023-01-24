@@ -1,5 +1,5 @@
-import faceitPlayerReponse from '../../../@types/player'
-import faceitElo from '../../../@types/level'
+import type faceitPlayerReponse from '../../../@types/player'
+import type faceitElo from '../../../@types/level'
 import mongoose from 'mongoose'
 
 const faceitEloSchema = new mongoose.Schema<faceitElo>({

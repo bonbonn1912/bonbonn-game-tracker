@@ -1,13 +1,14 @@
-import { Request, Response, NextFunction } from 'express'
+import { type Request, type Response, type NextFunction } from 'express'
 
-import faceitPlayerReponse, { faceitMatchHistory } from '../../@types/player'
-import faceitElo from '../../@types/level'
+import type faceitPlayerReponse from '../../@types/player'
+import { faceitMatchHistory } from '../../@types/player'
+import type faceitElo from '../../@types/level'
 import { getFaceitPlayer } from '../../util/faceit/getEloFromFaceitApi'
 import { getLastFiveGames } from '../../util/faceit/getLastFiveGames'
 import { faceitRankInformation } from '../../util/faceit/getEloInformation'
 import { eloReponse, appendHistory, appendWinRate } from '../../util/faceit/createResponseString'
 import { getCustomFaceitHistory } from '../../util/faceit/getCustomHistory'
-import { faction1, faction2, matchHistory } from '../../@types/customHistory'
+import { faction1, faction2, type matchHistory } from '../../@types/customHistory'
 import { isWinnerFaction } from '../../util/faceit/isWinnerFaction'
 
 const getFaceitElo = async (req: Request, res: Response, next: NextFunction) => {
@@ -25,7 +26,7 @@ const getFaceitElo = async (req: Request, res: Response, next: NextFunction) => 
 
 const getLastFive = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const lastFiveGames: string[] = await getLastFiveGames(req.player.player_id as string)
+    const lastFiveGames: string[] = await getLastFiveGames(req.player.player_id)
     req.player.local.responseString += appendHistory(lastFiveGames, '. Last 5 Games: ')
     req.player.matchHistory = lastFiveGames
   } catch {

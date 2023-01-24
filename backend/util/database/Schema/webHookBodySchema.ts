@@ -1,4 +1,4 @@
-import webHookBody, { payload, team, player } from '../../../@types/webhook'
+import webHookBody, { type payload, type team, type player } from '../../../@types/webhook'
 import mongoose from 'mongoose'
 
 const playerSchema = new mongoose.Schema<player>({

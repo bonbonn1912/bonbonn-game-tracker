@@ -1,5 +1,5 @@
 import { SECRETS } from '../../config/env'
-import { matchHistory } from '../../@types/customHistory'
+import { type matchHistory } from '../../@types/customHistory'
 
 const getCustomFaceitHistory = async (faceitId: string, limit: number): Promise<matchHistory> => {
   const url: string = SECRETS.faceit.baseUrl + `/players/${faceitId}/history?game=csgo&offset=0&limit=${limit}`
