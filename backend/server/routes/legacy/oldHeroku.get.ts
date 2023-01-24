@@ -36,7 +36,7 @@ legacyGetRouter.get("/checkelo", checkEloInput, getFaceitElo, getLastFive, (req:
 })
 
 legacyGetRouter.get("/matchhistory", checkMatchHistoryInput,getFaceitElo, getCustomHistory, (req: Request, res: Response) => {
-   // addPlayerToDB(req.player, InsertType.CHECKELO)
+    addPlayerToDB(req.player, InsertType.MATCHHISTORY)
    res.send(req.player.local.responseString)
 })
 

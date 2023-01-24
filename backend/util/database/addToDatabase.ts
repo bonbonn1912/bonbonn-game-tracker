@@ -1,21 +1,34 @@
 import mongoose, { Schema } from "mongoose";
 import faceitPlayerReponse from "../../@types/player";
-import { extendedPlayerSchema, extendedMatchroomSchema} from "./Schema/extendedSchema";
+import { playerSchema } from "./Schema/playerSchema";
+import { webHookBodySchema } from "./Schema/webHookBodySchema";
 import { SECRETS } from "../../config/env";
 import { InsertType } from "../../@types/insertTypes";
 import webHookBody from "../../@types/webhook";
 
 const addPlayerToDB = async (player: faceitPlayerReponse, insertType: InsertType) => {
     player.insertType = insertType
-    mongoInsert(player, extendedPlayerSchema, SECRETS.mongo.playerCollectionName as string);
+    mongoInsert(player, extendSchema(playerSchema), SECRETS.mongo.playerCollectionName as string);
 };
 
 const addMatchroomToDB = async (matchroom: webHookBody ) =>{
-    mongoInsert(matchroom, extendedMatchroomSchema, SECRETS.mongo.matchRoomCollectionName as string);
+    mongoInsert(matchroom, extendSchema(webHookBodySchema), SECRETS.mongo.matchRoomCollectionName as string);
 }
 
-const getModel = (schema: Schema, collection: string) =>{
+const getModel = (schema: Schema, collection: string)  =>{
     return mongoose.models[collection] || mongoose.model(collection, schema)
+}
+
+const extendSchema = (schema: mongoose.Schema) : mongoose.Schema=>{
+    const extendedSchema = new mongoose.Schema({
+        meta : {
+            inserted_at: { type: String, default : () => new Date},
+            timestamp: { type: String, default : () => new Date},
+            isRunning: { type: Boolean, default: false}
+        },
+        ...schema.obj
+    })
+    return extendedSchema
 }
 
 const mongoInsert = async (document: webHookBody | faceitPlayerReponse,schema: Schema, collection: string) =>{

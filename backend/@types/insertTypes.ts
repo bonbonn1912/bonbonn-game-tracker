@@ -3,6 +3,7 @@ enum InsertType {
     ELOBYID = "ELOBYID",
     ELOBYSTEAMID = "ELOBYSTEAMID",
     CHECKELO = "CHECKELO",
+    MATCHHISTORY = "MATCHHISTORY"
 }
 
 export { InsertType }
