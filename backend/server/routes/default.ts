@@ -1,23 +1,21 @@
-import { Router, Request, Response} from "express";
+import { Router, Request, Response } from 'express'
 import path from 'path'
 
-const defaultRouter: Router = Router();
+const defaultRouter: Router = Router()
 
-defaultRouter.get("/test", (req: Request, res: Response) => {
-  res.send({ message: "Hello World!" });
+defaultRouter.get('/test', (req: Request, res: Response) => {
+  res.send({ message: 'Hello World!' })
 })
 
 /**
  * ts-node needs another static path since the application doesnt run from build (frontend needs to be build before)
  */
-defaultRouter.get("/*", (req: Request, res: Response) => {
-    let indexPath: string = process.env.ts_node != "true" 
-    ? path.resolve(__dirname,"../../../frontend", "index.html") 
-    : path.resolve(__dirname,"../../../build/frontend", "index.html") 
+defaultRouter.get('/*', (req: Request, res: Response) => {
+  const indexPath: string = process.env.ts_node != 'true'
+    ? path.resolve(__dirname, '../../../frontend', 'index.html')
+    : path.resolve(__dirname, '../../../build/frontend', 'index.html')
 
-    res.sendFile(indexPath)
-    
-});
-
+  res.sendFile(indexPath)
+})
 
 export default defaultRouter

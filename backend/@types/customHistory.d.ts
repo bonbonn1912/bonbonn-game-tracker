@@ -8,7 +8,6 @@ interface singlePlayer {
     faceit_url: string,
 }
 
-
 interface faction1 {
     team_id: string,
     nickname: string,
@@ -35,15 +34,14 @@ interface score {
     facetion2: number
 }
 
-
-interface teams {   
+interface teams {
     faction1: faction1,
     faction2: faction2,
 }
 
 interface matchHistory {
     items: items[]
-   
+
 }
 
 interface items{

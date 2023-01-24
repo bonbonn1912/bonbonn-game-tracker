@@ -1,5 +1,5 @@
-import faceitElo, {faceitEloSchema} from "./level"
-import { InsertType } from "../util/database/Schema/insertTypes"
+import faceitElo, { faceitEloSchema } from './level'
+import { InsertType } from '../util/database/Schema/insertTypes'
 
 export default interface faceitPlayerReponse {
     insertType?: InsertType,
@@ -35,8 +35,7 @@ interface faceitMatchHistory {
 }
 
 interface lifetime {
-    "Recent Results": string[]
+    'Recent Results': string[]
 }
 
 export { faceitMatchHistory }
-
