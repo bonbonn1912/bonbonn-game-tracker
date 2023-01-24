@@ -1,6 +1,6 @@
-import { SECRETS } from '../../config/env'
+import { SECRETS } from '../../../config/env'
 
-import { type faceitMatchHistory } from '../../@types/player'
+import { type faceitMatchHistory } from '../../../@types/player'
 
 const getLastFiveGames = async (faceitId: string): Promise<string[]> => {
   const url: string = SECRETS.faceit.baseUrl + `/players/${faceitId}/stats/csgo`

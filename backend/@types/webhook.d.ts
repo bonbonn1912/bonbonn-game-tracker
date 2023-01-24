@@ -10,6 +10,24 @@ export default interface webHookBody {
   retry_count: number
   version: number
   payload: payload
+  map?: string // from /matches/{matchId}
+  matchup: matchup
+  streamer: string,
+}
+
+interface matchup {
+   team1 : firstTeam,
+   team2: secondTeam
+}
+
+interface firstTeam{
+    name: string,
+    avgElo: number,
+}
+
+interface secondTeam{
+    name: string,
+    avgElo: number,
 }
 
 interface payload {
@@ -53,4 +71,4 @@ interface player {
   anticheat_required: boolean
 }
 
-export type { payload, entity, team, player }
+export type { payload, entity, team, player, matchup, firstTeam, secondTeam }

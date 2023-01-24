@@ -12,7 +12,7 @@ const addPlayerToDB = async (player: faceitPlayerReponse, insertType: InsertType
 }
 
 const addMatchroomToDB = async (matchroom: webHookBody) => {
-  mongoInsert(matchroom, extendSchema(webHookBodySchema, false), SECRETS.mongo.matchRoomCollectionName as string)
+  mongoInsert(matchroom, extendSchema(webHookBodySchema, true), SECRETS.mongo.matchRoomCollectionName as string)
 }
 
 const getModel = (schema: Schema, collection: string) => {
