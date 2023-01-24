@@ -8,23 +8,23 @@ import webHookBody from "../../@types/webhook";
 
 const addPlayerToDB = async (player: faceitPlayerReponse, insertType: InsertType) => {
     player.insertType = insertType
-    mongoInsert(player, extendSchema(playerSchema), SECRETS.mongo.playerCollectionName as string);
+    mongoInsert(player, extendSchema(playerSchema, null), SECRETS.mongo.playerCollectionName as string);
 };
 
 const addMatchroomToDB = async (matchroom: webHookBody ) =>{
-    mongoInsert(matchroom, extendSchema(webHookBodySchema), SECRETS.mongo.matchRoomCollectionName as string);
+    mongoInsert(matchroom, extendSchema(webHookBodySchema, false), SECRETS.mongo.matchRoomCollectionName as string);
 }
 
 const getModel = (schema: Schema, collection: string)  =>{
     return mongoose.models[collection] || mongoose.model(collection, schema)
 }
 
-const extendSchema = (schema: mongoose.Schema) : mongoose.Schema=>{
+const extendSchema = (schema: mongoose.Schema, isRunning: Boolean | null) : mongoose.Schema=>{
     const extendedSchema = new mongoose.Schema({
         meta : {
             inserted_at: { type: String, default : () => new Date},
             timestamp: { type: String, default : () => new Date},
-            isRunning: { type: Boolean, default: false}
+            isRunning: { type: Boolean, default: isRunning, required: false}
         },
         ...schema.obj
     })
