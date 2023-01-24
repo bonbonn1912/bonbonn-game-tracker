@@ -134,3 +134,4 @@ build
 *.DS_Store
 
 examples
+megalinter-reports/
