@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express'
+import { type Request, type Response, type NextFunction } from 'express'
 import { validFaceitUsername, validSteam64Id, validFaceitId, validLimit } from '../../util/validRequestParameter'
 import { SECRETS } from '../../config/env'
 

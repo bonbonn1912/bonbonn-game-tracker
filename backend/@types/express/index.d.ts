@@ -1,9 +1,9 @@
-import faceitPlayerReponse from '../player'
+import type faceitPlayerReponse from '../player'
 
 declare global {
   namespace Express {
-      export interface Request {
-          player: faceitPlayerReponse;
-      }
+    export interface Request {
+      player: faceitPlayerReponse
+    }
   }
 }

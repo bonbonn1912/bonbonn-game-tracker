@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express'
+import { Router, type Request, type Response } from 'express'
 import { addMatchroomToDB } from '../../../util/database/addToDatabase'
 
 const legacyPostRouter: Router = Router()

@@ -15,7 +15,7 @@ const validFaceitId = (faceitid: string): boolean => {
   return regexp.test(faceitid)
 }
 
-const validLimit = (request: any) : boolean => {
+const validLimit = (request: any): boolean => {
   if (!isNaN(request) && parseInt(request) > 3 && parseInt(request) < 101) {
     return true
   }

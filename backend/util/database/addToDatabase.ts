@@ -1,10 +1,10 @@
-import mongoose, { Schema } from 'mongoose'
-import faceitPlayerReponse from '../../@types/player'
+import mongoose, { type Schema } from 'mongoose'
+import type faceitPlayerReponse from '../../@types/player'
 import { playerSchema } from './Schema/playerSchema'
 import { webHookBodySchema } from './Schema/webHookBodySchema'
 import { SECRETS } from '../../config/env'
-import { InsertType } from '../../@types/insertTypes'
-import webHookBody from '../../@types/webhook'
+import { type InsertType } from '../../@types/insertTypes'
+import type webHookBody from '../../@types/webhook'
 
 const addPlayerToDB = async (player: faceitPlayerReponse, insertType: InsertType) => {
   player.insertType = insertType
@@ -19,7 +19,7 @@ const getModel = (schema: Schema, collection: string) => {
   return mongoose.models[collection] || mongoose.model(collection, schema)
 }
 
-const extendSchema = (schema: mongoose.Schema, isRunning: Boolean | null) : mongoose.Schema => {
+const extendSchema = (schema: mongoose.Schema, isRunning: boolean | null): mongoose.Schema => {
   const extendedSchema = new mongoose.Schema({
     meta: {
       inserted_at: { type: String, default: () => new Date() },
@@ -33,7 +33,7 @@ const extendSchema = (schema: mongoose.Schema, isRunning: Boolean | null) : mong
 
 const mongoInsert = async (document: webHookBody | faceitPlayerReponse, schema: Schema, collection: string) => {
   mongoose.set('strictQuery', true)
-  const connectionString: string = SECRETS.mongo.connectionString as string + SECRETS.mongo.dbName as string
+  const connectionString: string = SECRETS.mongo.connectionString as string + SECRETS.mongo.dbName
   const Model = getModel(schema, collection)
   const entry = new Model(document)
   let connectResult

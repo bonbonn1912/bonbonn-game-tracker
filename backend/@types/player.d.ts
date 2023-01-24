@@ -1,41 +1,42 @@
-import faceitElo, { faceitEloSchema } from './level'
-import { InsertType } from '../util/database/Schema/insertTypes'
+import type faceitElo from './level'
+import { faceitEloSchema } from './level'
+import { type InsertType } from '../util/database/Schema/insertTypes'
 
 export default interface faceitPlayerReponse {
-    insertType?: InsertType,
-    local: faceitElo,
-    player_id: string,
-    nickname: string,
-    avatar: string,
-    country: string,
-    cover_image: string,
-    platforms: platform,
-    games: games,
-    matchHistory? : string[]
+  insertType?: InsertType
+  local: faceitElo
+  player_id: string
+  nickname: string
+  avatar: string
+  country: string
+  cover_image: string
+  platforms: platform
+  games: games
+  matchHistory?: string[]
 }
 
 interface platform {
-    steam?: string
+  steam?: string
 }
 
 interface games {
-    csgo: csgo
+  csgo: csgo
 }
 
 interface csgo {
-    region: string,
-    game_player_id: string,
-    skill_level: number,
-    faceit_elo: number,
-    game_player_name: string,
+  region: string
+  game_player_id: string
+  skill_level: number
+  faceit_elo: number
+  game_player_name: string
 }
 
 interface faceitMatchHistory {
-    lifetime: lifetime
+  lifetime: lifetime
 }
 
 interface lifetime {
-    'Recent Results': string[]
+  'Recent Results': string[]
 }
 
-export { faceitMatchHistory }
+export type { faceitMatchHistory }

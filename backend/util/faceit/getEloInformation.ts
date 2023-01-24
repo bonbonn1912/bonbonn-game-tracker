@@ -1,5 +1,5 @@
-import faceitElo from '../../@types/level'
-import faceitPlayerReponse from '../../@types/player'
+import type faceitElo from '../../@types/level'
+import type faceitPlayerReponse from '../../@types/player'
 
 const faceitRankInformation = (player: faceitPlayerReponse): faceitElo => {
   const baseElo: number = player.games.csgo.faceit_elo - 800
@@ -34,7 +34,7 @@ const faceitRankInformation = (player: faceitPlayerReponse): faceitElo => {
   return rankInformation
 }
 
-const minEloForLevel: Array<number> = [
+const minEloForLevel: number[] = [
   1, 801, 951, 1101, 1251, 1401, 1551, 1701, 1851, 2001
 ]
 

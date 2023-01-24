@@ -1,6 +1,6 @@
-import faceitElo from '../../@types/level'
+import type faceitElo from '../../@types/level'
 
-const eloReponse = (rankInformation: faceitElo) : string => {
+const eloReponse = (rankInformation: faceitElo): string => {
   if (rankInformation.isMax) {
     return `${rankInformation.username} is level ${rankInformation.level} with ${rankInformation.elo} elo`
   } else {
@@ -8,7 +8,7 @@ const eloReponse = (rankInformation: faceitElo) : string => {
   }
 }
 
-const appendHistory = (matchHistory: string[], firstPart: string) : string => {
+const appendHistory = (matchHistory: string[], firstPart: string): string => {
   if (matchHistory.length == 0) {
     return ''
   }
