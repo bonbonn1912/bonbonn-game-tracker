@@ -12,12 +12,28 @@ const isStreamer = (key: string): boolean =>{
     return redirectUrl.has(key)
 }
 
-const addGame = (key: string, game: webHookBody): void =>{
-    liveGames.set(key, game)
+const isLive = (key: string): boolean =>{
+    return liveGames.has(key)
 }
 
-const removeGame = (key: string) => {
+const addGame = (key: string, game: webHookBody): void =>{
+    liveGames.set(key, game)
+    console.log("Added Game for Player " + key)
+}
+
+const initLiveGames = (games: webHookBody[]): void =>{
+    games.forEach(game =>{
+        addGame(game.streamer, game)
+    })
+}
+
+const removeGame = (key: string) : void => {
+   if(liveGames.has(key)){
     liveGames.delete(key)
+    console.log("Deleted Game for Player: " + key)
+   }else{
+    console.log("Could not delete Game")
+   }  
 }
 
 const getGame = (key: string) : webHookBody | undefined=> {
@@ -27,4 +43,4 @@ const getGame = (key: string) : webHookBody | undefined=> {
     return undefined
 }
  
-export { addGame, removeGame, getGame, isStreamer, redirectUrl }
+export { addGame, removeGame, getGame, isStreamer, initLiveGames,isLive, redirectUrl }

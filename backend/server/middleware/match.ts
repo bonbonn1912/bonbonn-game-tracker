@@ -2,14 +2,21 @@ import { Request, Response, NextFunction } from "express"
 import { getMap } from "../../util/faceit/matchroom/getMap"
 import teamFromMatch, { rosterPLayer} from "../../@types/roster"
 import { getFaceitPlayer } from "../../util/faceit/player/getEloFromFaceitApi"
-import { matchup, firstTeam, secondTeam } from "../../@types/webhook"
+import webHookBody, { matchup, firstTeam, secondTeam } from "../../@types/webhook"
 import { SECRETS } from "../../config/env"
+import { removeGame, getGame, isLive } from "../../util/liveGames"
+import { alreadyLive, mongoUpdate } from "../../util/database/addToDatabase"
+
 
 
 const validateEvent = async (req: Request, res: Response, next: NextFunction) =>{
     if(req.body.event === 'match_status_configuring'){
         req.body.map = await getMap(req.body.payload.id)
         next()
+    }else if(req.body.event === 'match_status_finished'){
+        removeGame(req.headers.authorization as string)
+        mongoUpdate(req.headers.authorization as string);
+        res.send("Close match")
     }else{
         res.send("Invalid Request oder match is closed")
     }
@@ -50,6 +57,7 @@ const addEloInformation = async (req: Request, res: Response, next: NextFunction
 const getAvgElo =  async (roster: rosterPLayer[]): Promise<number> =>{
    const teamElo: number[] =  []
    let avgElo: number = 0;
+   console.log(`Fetching Elo for: ${roster.map(player => player.nickname)}` )
    await Promise.all([
         getFaceitPlayer(roster[0].nickname),
         getFaceitPlayer(roster[1].nickname),
@@ -74,7 +82,25 @@ const validateKeyInput = (req: Request, res: Response, next: NextFunction) =>{
         }else{
             res.send("Invalid Key")
         }
-
 }
 
-export { validateEvent, addEloInformation, validateAuthorizationHeader, validateKeyInput }
+const validateStreamerGame = async(req: Request, res: Response, next: NextFunction) =>{
+    const live = await alreadyLive(req.headers.authorization as string)
+    if(live){
+        res.status(404).send("There is already a running game for streamer " + req.headers.authorization)
+    }else{
+        next()
+    }
+}
+
+const redirectToMatchroom = async (req: Request, res: Response) =>{
+    if(isLive(req.query.key as string)){
+        let game: webHookBody | undefined = getGame(req.query.key as string)
+        res.redirect(`https://www.faceit.com/en/csgo/room/${game?.payload.id}`)
+    }else{
+        res.send(`Player with id: ${req.query.key} is currently not ingame`)
+    }
+}
+
+
+export { validateEvent, addEloInformation, validateAuthorizationHeader, validateKeyInput, validateStreamerGame, redirectToMatchroom }

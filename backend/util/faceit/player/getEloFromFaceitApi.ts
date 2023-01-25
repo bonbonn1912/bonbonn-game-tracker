@@ -5,7 +5,6 @@ import type faceitPlayerReponse from '../../../@types/player'
 const getFaceitPlayer = async (username: string, id?: string): Promise<faceitPlayerReponse> => {
   const path: string = id == undefined ? `/players?nickname=${username}` : `${isFaceitID(id) ? `/players/${id}` : `/players?game=csgo&game_player_id=${id}`}`
   const url: string = SECRETS.faceit.baseUrl + path
-  console.log(url)
   const responseRaw: Response = await fetch(url, {
     method: 'GET',
     headers: SECRETS.faceit.header

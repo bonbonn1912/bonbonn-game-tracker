@@ -4,7 +4,7 @@ import { checkEloInput, checkEloBySteamIdInput, checkEloByFaceitIdInput, checkMa
 import { getCustomHistory, getFaceitElo, getLastFive } from '../../middleware/elo'
 import { addPlayerToDB } from '../../../util/database/addToDatabase'
 import { InsertType } from '../../../@types/insertTypes'
-import { validateKeyInput } from '../../middleware/match'
+import { redirectToMatchroom, validateKeyInput } from '../../middleware/match'
 import webHookBody from '../../../@types/webhook'
 import { getGame } from '../../../util/liveGames'
 import { matchRoomResponse } from '../../../util/createResponseString'
@@ -37,9 +37,7 @@ legacyGetRouter.get('/matchhistory', checkMatchHistoryInput, getFaceitElo, getCu
 })
 
 legacyGetRouter.get("/getmatch", validateKeyInput, (req: Request, res: Response) =>{
-  console.log("getgame")
   let currentGame: webHookBody | undefined = getGame(req.query.key as string)
-  console.log(currentGame)
   if(currentGame == undefined){
     res.send("This User is currently not in a matchroom")
   }else{
@@ -47,5 +45,7 @@ legacyGetRouter.get("/getmatch", validateKeyInput, (req: Request, res: Response)
     res.send(reponseString)
   }
 })
+
+legacyGetRouter.get("/redirect", validateKeyInput,redirectToMatchroom)
 
 export default legacyGetRouter
