@@ -19,7 +19,7 @@ const getFaceitElo = async (req: Request, res: Response, next: NextFunction) => 
     req.player = player
     next()
   } catch {
-    res.status(404).send('Invalid username / steam64 id / faceit id')
+    res.status(200).send('Invalid username')
   }
 }
 
