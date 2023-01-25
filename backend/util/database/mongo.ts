@@ -5,6 +5,7 @@ import { webHookBodySchema } from './Schema/webHookBodySchema'
 import { SECRETS } from '../../config/env'
 import { type InsertType } from '../../@types/insertTypes'
 import type webHookBody from '../../@types/webhook'
+import log from '../logging/print'
 
 const addPlayerToDB = async (player: faceitPlayerReponse, insertType: InsertType) => {
   player.insertType = insertType
@@ -25,7 +26,7 @@ const getConnection = async () =>{
   try {
     connectionResult = await mongoose.connect(connectionString, SECRETS.mongo.timeoutAfter)
   } catch {
-    console.log('Could not connect to Database')
+    log('Could not connect to Database')
   }finally{
     return connectionResult
   }
@@ -51,9 +52,9 @@ const mongoInsert = async (document: webHookBody | faceitPlayerReponse, schema: 
   if (connectResult != undefined) {
     await entry.save((err: Error) => {
       if (err) {
-        console.log(err)
+        log(err)
       } else {
-        console.log(`Added Entry to collection ${collection}`)
+        log(`Added Entry to collection ${collection}`)
       }
       mongoose.disconnect()
     })
@@ -70,9 +71,9 @@ const mongoUpdate = async (key: string) =>{
   if (connectResult != undefined) {
      let result = await Model.findOneAndUpdate(filter, update)
      if(result == null){
-      console.log("Could not update Game")
+      log("Could not update Game")
      }else{
-      console.log("Game closed in DB")
+      log("Game closed in DB")
      } 
      mongoose.disconnect()
   }
@@ -88,7 +89,7 @@ const alreadyLive = async (key: string) : Promise<Boolean> =>{
   if(connectResult != undefined){
     let response =  Model.find(selection)
     let matches = await response.lean().exec() as unknown as webHookBody[]
-    console.log(`Live Games for Streamer ${key} : ${matches.length}`)
+    log(`Live Games for Streamer ${key} : ${matches.length}`)
     if(matches.length > 0){
       return true
     }else{
@@ -99,6 +100,14 @@ const alreadyLive = async (key: string) : Promise<Boolean> =>{
   
 }
 
+const dropDB = () =>{
+  const connectionString: string = SECRETS.mongo.connectionString as string + SECRETS.mongo.dbName
+  mongoose.connect(connectionString, () =>{
+    mongoose.connection.db.dropDatabase()
+  })
+  return true
+}
+
 const getLiveGames = async () : Promise<webHookBody[]> =>{
   const selection = { "meta.isRunning" : true }
   mongoose.set('strictQuery', true)
@@ -107,7 +116,7 @@ const getLiveGames = async () : Promise<webHookBody[]> =>{
   try {
     connectResult = await mongoose.connect(connectionString, SECRETS.mongo.timeoutAfter)
   } catch {
-    console.log('Could not connect to Database')
+    log('Could not connect to Database')
   }
   const extendedSchema = extendSchema(webHookBodySchema, true)
   const Model = getModel(extendedSchema,SECRETS.mongo.matchRoomCollectionName as string);
@@ -117,4 +126,4 @@ const getLiveGames = async () : Promise<webHookBody[]> =>{
   return matches
 }
 
-export { addPlayerToDB, addMatchroomToDB, mongoUpdate, getLiveGames, alreadyLive }
+export { addPlayerToDB, addMatchroomToDB, mongoUpdate, getLiveGames, alreadyLive, dropDB }

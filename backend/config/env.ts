@@ -6,10 +6,18 @@ const envPath: string = path.join(__dirname, `./../../${NODE_ENV}.env`);
 
 dotenv.config({ path: envPath });
 
+export const isTest = () : Boolean =>{
+  if(SECRETS.testMode == "false"){
+    return true
+  }else{
+    return false
+  }
+}
+
 export const SECRETS = {
   PORT: process.env.PORT,
   env: NODE_ENV,
-  var1: process.env.test,
+  testMode: process.env.testMode,
   faceit: {
     apiKey: process.env.apiKey,
     baseUrl: "https://open.faceit.com/data/v4",

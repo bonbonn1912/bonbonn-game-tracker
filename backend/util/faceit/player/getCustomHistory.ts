@@ -1,9 +1,10 @@
 import { SECRETS } from '../../../config/env'
 import { type matchHistory } from '../../../@types/customHistory'
+import log from '../../logging/print'
 
 const getCustomFaceitHistory = async (faceitId: string, limit: number): Promise<matchHistory> => {
   const url: string = SECRETS.faceit.baseUrl + `/players/${faceitId}/history?game=csgo&offset=0&limit=${limit}`
-  console.log(url)
+  log(url)
   const responseRaw: Response = await fetch(url, {
     method: 'GET',
     headers: SECRETS.faceit.header

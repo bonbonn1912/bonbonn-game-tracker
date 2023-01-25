@@ -5,7 +5,8 @@ import { getFaceitPlayer } from "../../util/faceit/player/getEloFromFaceitApi"
 import webHookBody, { matchup, firstTeam, secondTeam } from "../../@types/webhook"
 import { SECRETS } from "../../config/env"
 import { removeGame, getGame, isLive } from "../../util/liveGames"
-import { alreadyLive, mongoUpdate } from "../../util/database/addToDatabase"
+import { alreadyLive, mongoUpdate } from "../../util/database/mongo"
+import log from "../../util/logging/print"
 
 
 
@@ -24,7 +25,6 @@ const validateEvent = async (req: Request, res: Response, next: NextFunction) =>
 
 const validateAuthorizationHeader = (req: Request, res: Response, next: NextFunction) =>{
     const regexp = new RegExp(SECRETS.regex.faceitId)
-    console.log(regexp.test(req.headers.authorization as string))
     if(regexp.test(req.headers.authorization as string)){
         req.body.streamer = req.headers.authorization
         next()
@@ -57,7 +57,7 @@ const addEloInformation = async (req: Request, res: Response, next: NextFunction
 const getAvgElo =  async (roster: rosterPLayer[]): Promise<number> =>{
    const teamElo: number[] =  []
    let avgElo: number = 0;
-   console.log(`Fetching Elo for: ${roster.map(player => player.nickname)}` )
+   log(`Fetching Elo for: ${roster.map(player => player.nickname)}` )
    await Promise.all([
         getFaceitPlayer(roster[0].nickname),
         getFaceitPlayer(roster[1].nickname),
@@ -70,7 +70,7 @@ const getAvgElo =  async (roster: rosterPLayer[]): Promise<number> =>{
         })
         avgElo = Math.floor(teamElo.reduce((curr: number, next: number) => curr + next,0)/5)
     }).catch(err =>{
-        console.log("Could not retreive avg Elo")
+        log("Could not retreive avg Elo")
     })
     return avgElo
 }

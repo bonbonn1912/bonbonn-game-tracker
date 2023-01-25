@@ -1,12 +1,13 @@
 import server from './server/server'
 import { SECRETS } from './config/env'
-import { getLiveGames } from './util/database/addToDatabase'
+import { getLiveGames } from './util/database/mongo'
 import { initLiveGames } from './util/liveGames'
 import webHookBody from './@types/webhook'
+import log from './util/logging/print'
 
-console.log(SECRETS.var1)
+
 getLiveGames().then(games =>{
-    console.log(games.length)
+    log(games.length)
     initLiveGames(games)
 })
-server.listen(SECRETS.PORT, () => { console.log(`Server listening on port ${SECRETS.PORT}`) })
+server.listen(SECRETS.PORT, () => { log(`Server listening on port ${SECRETS.PORT}`) })

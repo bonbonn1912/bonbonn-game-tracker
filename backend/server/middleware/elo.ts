@@ -52,10 +52,9 @@ const getCustomHistory = async (req: Request, res: Response, next: NextFunction)
       req.player.local.responseString = appendHistory(matchHistory, `${req.player.nickname}'s last ${req.query.limit} Games: `) + appendWinRate(matchHistory)
       next()
     } else {
-      res.status(404).send('Play at least 3 Games to see your history')
+      res.status(200).send('Play at least 3 Games to see your history')
     }
   } catch {
-    console.log('hier')
     res.status(404).send('Something went wrong')
   }
 }
