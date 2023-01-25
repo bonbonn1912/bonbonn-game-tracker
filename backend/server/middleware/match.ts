@@ -13,12 +13,12 @@ const validateEvent = async (req: Request, res: Response, next: NextFunction) =>
     if(req.body.event === 'match_status_configuring'){
         req.body.map = await getMap(req.body.payload.id)
         next()
-    }else if(req.body.event === 'match_status_finished'){
+    }else if(req.body.event !== 'match_object_created'){
         removeGame(req.headers.authorization as string)
         mongoUpdate(req.headers.authorization as string);
         res.send("Close match")
     }else{
-        res.send("Invalid Request oder match is closed")
+        res.send("Invalid Request oder match is already closed")
     }
 }
 
