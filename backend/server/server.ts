@@ -7,6 +7,8 @@ import defaultRouter from './routes/default'
 import legacyGetRouter from './routes/legacy/oldHeroku.get'
 import legacyPostRouter from './routes/legacy/oldHeroku.post'
 
+import { gtGetRouter } from './routes/gt/gt.get'
+
 const server = express()
 
 /**
@@ -21,8 +23,10 @@ server.use(express.json())
 server.use(cors())
 server.use(bodyParser.urlencoded({ extended: true }))
 
+server.use(gtGetRouter)
 server.use(legacyGetRouter)
 server.use(legacyPostRouter)
 server.use(defaultRouter)
+
 
 export default server

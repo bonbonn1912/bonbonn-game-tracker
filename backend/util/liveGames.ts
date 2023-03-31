@@ -4,7 +4,8 @@ import log from "./logging/print";
 let liveGames = new Map<string, webHookBody>
 let redirectUrl: Map<string, string> = new Map([
     ["4967963b-566f-4e8a-908b-02c8315d12f1","http://edox.faceitlobby.com"],
-    ["afce1ec2-1b60-47bd-88c1-bfadce96876a", "http://danielpello.faceitlobby.com"]
+    ["afce1ec2-1b60-47bd-88c1-bfadce96876a", "http://danielpello.faceitlobby.com"],
+    ["e3cefc97-36b1-4615-91d6-cdcca13e4e58","http://megalopolik.faceitlobby.com"]
 ]
    
 );
@@ -43,5 +44,9 @@ const getGame = (key: string) : webHookBody | undefined=> {
     }
     return undefined
 }
+
+const getLive = () =>{
+    return liveGames;
+}
  
-export { addGame, removeGame, getGame, isStreamer, initLiveGames,isLive, redirectUrl }
+export { addGame, removeGame, getGame, isStreamer, initLiveGames,isLive, redirectUrl, getLive }
