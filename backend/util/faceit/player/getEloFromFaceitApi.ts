@@ -9,9 +9,7 @@ const getFaceitPlayer = async (username: string, id?: string): Promise<faceitPla
     method: 'GET',
     headers: SECRETS.faceit.header
   })
-
   const player: faceitPlayerReponse = await responseRaw.json()
-  console.log(player)
   return player
 }
 
