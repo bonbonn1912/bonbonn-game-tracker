@@ -6,6 +6,7 @@ import cors from 'cors'
 import defaultRouter from './routes/default'
 import legacyGetRouter from './routes/legacy/oldHeroku.get'
 import legacyPostRouter from './routes/legacy/oldHeroku.post'
+import consolePostRouter from './routes/legacy/consoleelo.post'
 
 const server = express()
 
@@ -21,8 +22,10 @@ server.use(express.json())
 server.use(cors())
 server.use(bodyParser.urlencoded({ extended: true }))
 
+server.use(consolePostRouter)
 server.use(legacyGetRouter)
 server.use(legacyPostRouter)
+
 server.use(defaultRouter)
 
 export default server
