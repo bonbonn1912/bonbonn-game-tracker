@@ -2,10 +2,10 @@ import webHookBody from "../@types/webhook";
 
 let liveGames = new Map<string, webHookBody>
 let redirectUrl: Map<string, string> = new Map([
-    ["4967963b-566f-4e8a-908b-02c8315d12f1","http://edox.faceitlobby.com"],
-    ["afce1ec2-1b60-47bd-88c1-bfadce96876a", "http://danielpello.faceitlobby.com"],
-    ["e3cefc97-36b1-4615-91d6-cdcca13e4e58","http://megalopolik.faceitlobby.com"],
-    ["179d5eb7-be1a-473a-8bc5-36310ebc0f28","http://missmoeppi.faceitlobby.com"]
+    ["4967963b-566f-4e8a-908b-02c8315d12f1","https://edox.faceitlobby.com"],
+    ["afce1ec2-1b60-47bd-88c1-bfadce96876a", "https://danielpello.faceitlobby.com"],
+    ["e3cefc97-36b1-4615-91d6-cdcca13e4e58","https://megalopolik.faceitlobby.com"],
+    ["179d5eb7-be1a-473a-8bc5-36310ebc0f28","https://missmoeppi.faceitlobby.com"]
 ]
    
 );
