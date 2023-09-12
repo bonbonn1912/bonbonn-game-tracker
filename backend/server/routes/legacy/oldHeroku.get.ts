@@ -2,37 +2,43 @@ import { Router, type Request, type Response } from 'express'
 
 import { checkEloInput, checkEloBySteamIdInput, checkEloByFaceitIdInput, checkMatchHistoryInput } from '../../middleware/checkInput'
 import { getCustomHistory, getFaceitElo, getLastFive } from '../../middleware/elo'
-import { addPlayerToDB } from '../../../util/database/addToDatabase'
+import { addPlayerToDB } from '../../../util/database/mongo'
 import { InsertType } from '../../../@types/insertTypes'
 import { redirectToMatchroom, validateKeyInput } from '../../middleware/match'
 import webHookBody from '../../../@types/webhook'
 import { getGame } from '../../../util/liveGames'
 import { matchRoomResponse } from '../../../util/createResponseString'
+import { isTest } from '../../../config/env'
 
 const legacyGetRouter: Router = Router()
 
 legacyGetRouter.get('/elo', checkEloInput, getFaceitElo, (req: Request, res: Response) => {
-  addPlayerToDB(req.player, InsertType.ELO)
+ // if(isTest())
+    addPlayerToDB(req.player, InsertType.ELO)
   res.send(req.player.local.responseString)
 })
 
 legacyGetRouter.get('/elobyid', checkEloByFaceitIdInput, getFaceitElo, (req: Request, res: Response) => {
-  addPlayerToDB(req.player, InsertType.ELOBYID)
+ // if(isTest())
+    addPlayerToDB(req.player, InsertType.ELOBYID)
   res.send(req.player.local.responseString)
 })
 
 legacyGetRouter.get('/elobysteamid', checkEloBySteamIdInput, getFaceitElo, (req: Request, res: Response) => {
-  addPlayerToDB(req.player, InsertType.ELOBYSTEAMID)
+ // if(isTest())
+    addPlayerToDB(req.player, InsertType.ELOBYSTEAMID)
   res.send(req.player.local.responseString)
 })
 
 legacyGetRouter.get('/checkelo', checkEloInput, getFaceitElo, getLastFive, (req: Request, res: Response) => {
-  addPlayerToDB(req.player, InsertType.CHECKELO)
+ // if(isTest())
+    addPlayerToDB(req.player, InsertType.CHECKELO)
   res.send(req.player.local.responseString)
 })
 
 legacyGetRouter.get('/matchhistory', checkMatchHistoryInput, getFaceitElo, getCustomHistory, (req: Request, res: Response) => {
-  addPlayerToDB(req.player, InsertType.MATCHHISTORY)
+ // if(isTest())
+    addPlayerToDB(req.player, InsertType.MATCHHISTORY)
   res.send(req.player.local.responseString)
 })
 

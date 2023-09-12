@@ -1,4 +1,5 @@
 import webHookBody from "../@types/webhook";
+import log from "./logging/print";
 
 let liveGames = new Map<string, webHookBody>
 let redirectUrl: Map<string, string> = new Map([
@@ -19,7 +20,7 @@ const isLive = (key: string): boolean =>{
 
 const addGame = (key: string, game: webHookBody): void =>{
     liveGames.set(key, game)
-    console.log("Added Game for Player " + key)
+    log("Added Game for Player " + key)
 }
 
 const initLiveGames = (games: webHookBody[]): void =>{
@@ -31,9 +32,9 @@ const initLiveGames = (games: webHookBody[]): void =>{
 const removeGame = (key: string) : void => {
    if(liveGames.has(key)){
     liveGames.delete(key)
-    console.log("Deleted Game for Player: " + key)
+    log("Deleted Game for Player: " + key)
    }else{
-    console.log("Could not delete Game")
+    log("Could not delete Game")
    }  
 }
 
@@ -43,5 +44,9 @@ const getGame = (key: string) : webHookBody | undefined=> {
     }
     return undefined
 }
+
+const getLive = () =>{
+    return liveGames;
+}
  
-export { addGame, removeGame, getGame, isStreamer, initLiveGames,isLive, redirectUrl }
+export { addGame, removeGame, getGame, isStreamer, initLiveGames,isLive, redirectUrl, getLive }

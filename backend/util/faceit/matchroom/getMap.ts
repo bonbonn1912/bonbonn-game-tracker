@@ -1,8 +1,9 @@
 import { SECRETS } from "../../../config/env";
 import matchroom from "../../../@types/matchroom";
+import log from "../../logging/print";
 
 const getMap = async (matchId: string) : Promise<string> => {
-    console.log("Get Map for match id : " + matchId)
+    log("Get Map for match id : " + matchId)
     const url: string = SECRETS.faceit.baseUrl + `/matches/${matchId}`
     const responseRaw: Response = await fetch(url, {
         method: 'GET',

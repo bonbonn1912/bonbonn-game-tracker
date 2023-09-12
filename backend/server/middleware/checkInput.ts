@@ -34,7 +34,7 @@ const checkMatchHistoryInput = (req: Request, res: Response, next: NextFunction)
   const username: any = req.query.username
   const limit: any = req.query.limit
   if (username == undefined || limit == undefined || !validFaceitUsername(username) || !validLimit(limit)) {
-    res.status(404).send('Incorrect faceit username or invalid limit (4-100)')
+    res.status(200).send('Incorrect faceit username or invalid limit (4-100)')
     return
   }
   next()
