@@ -13,7 +13,9 @@ import { isWinnerFaction } from '../../util/isWinnerFaction'
 const getFaceitElo = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const player: faceitPlayerReponse = await getFaceitPlayer(req.query.username as string, req.query.id as string)
+    console.log(player.games.cs2)
     const rankInformation: faceitElo = faceitRankInformation(player)
+    console.log(eloReponse(rankInformation))
     rankInformation.responseString = eloReponse(rankInformation)
     player.local = rankInformation
     req.player = player

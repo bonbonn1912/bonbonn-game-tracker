@@ -26,7 +26,7 @@ legacyGetRouter.get('/elobysteamid', checkEloBySteamIdInput, getFaceitElo, (req:
   res.send(req.player.local.responseString)
 })
 
-legacyGetRouter.get('/checkelo', checkEloInput, getFaceitElo, getLastFive, (req: Request, res: Response) => {
+legacyGetRouter.get('/checkelo', checkEloInput, getFaceitElo, (req: Request, res: Response) => {
   addPlayerToDB(req.player, InsertType.CHECKELO)
   res.send(req.player.local.responseString)
 })
