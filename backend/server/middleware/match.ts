@@ -102,5 +102,13 @@ const redirectToMatchroom = async (req: Request, res: Response) =>{
     }
 }
 
+const validateGameMode = async (req: Request, res: Response, next: NextFunction) =>{
+    if(req.body.payload.entity.type === "matchmaking"){
+        next();
+    }else{
+        res.send("Invalid Gamemode")
+    }
+}
 
-export { validateEvent, addEloInformation, validateAuthorizationHeader, validateKeyInput, validateStreamerGame, redirectToMatchroom }
+
+export { validateGameMode,validateEvent, addEloInformation, validateAuthorizationHeader, validateKeyInput, validateStreamerGame, redirectToMatchroom }

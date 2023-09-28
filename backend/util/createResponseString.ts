@@ -3,11 +3,13 @@ import type faceitElo from '../@types/level'
 import { isStreamer, redirectUrl } from './liveGames'
 
 const eloReponse = (rankInformation: faceitElo): string => {
-  if (rankInformation.isMax) {
-    return `${rankInformation.username} is level ${rankInformation.level} with ${rankInformation.elo} elo`
+  return `${rankInformation.username}'s Elo:  ${rankInformation.elo} (csgo) ${rankInformation.cs2elo == undefined ? "" :` / ${rankInformation.cs2elo} (cs2)`}`
+  
+ /* if (rankInformation.isMax) {
+    return `${rankInformation.username} is level!!! ${rankInformation.level} with ${rankInformation.elo} elo`
   } else {
     return `${rankInformation.username} is level ${rankInformation.level} with ${rankInformation.elo} elo. Elo needed for level ${rankInformation.level + 1}: ${rankInformation.eloToNextLevel} `
-  }
+  } */
 }
 
 const appendHistory = (matchHistory: string[], firstPart: string): string => {

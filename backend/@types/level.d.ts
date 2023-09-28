@@ -5,6 +5,7 @@ export default interface faceitElo {
   isMax: boolean
   level: number
   elo: number
+  cs2elo?: number
   eloToNextLevel?: number
   responseString: string
 }

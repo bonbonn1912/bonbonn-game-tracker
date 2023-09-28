@@ -13,6 +13,11 @@ const faceitRankInformation = (player: faceitPlayerReponse): faceitElo => {
     elo,
     eloToNextLevel: 0
   }
+  if(player.games.cs2 !== undefined){
+    rankInformation.cs2elo = player.games.cs2.faceit_elo
+  }
+  
+  
   if (baseElo <= 0) {
     rankInformation.isMax = false
     rankInformation.elo = elo
