@@ -9,7 +9,7 @@
     "dev": "export NODE_ENV=dev&&export ts_node=true&&nodemon --exec ts-node backend/index.ts",
     "prod": "tsc &&cd frontend&& npm run build&& cd ..&& node build/index.js",
     "heroku": "npm install&&cd frontend &&npm install &&npm run build && cd .. &&tsc&& node build/index.js",
-    "lint":  "eslint --ext .js,.ts ."
+    "lint": "eslint --ext .js,.ts ."
   },
   "repository": {
     "type": "git",
@@ -26,7 +26,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
-    "mongoose": "^6.8.4"
+    "mongoose": "^6.8.4",
+    "vite-plugin-pwa": "^0.16.5"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.2",
@@ -40,7 +41,7 @@
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^15.6.1",
     "eslint-plugin-promise": "^6.1.1",
-    "nodemon": "^2.0.20",
+    "nodemon": "^3.0.1",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.4"
   }
