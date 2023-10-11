@@ -25,7 +25,7 @@ jobs:
         script: |
           cd /home/bonbonn-game-tracker
           git pull
-          docker stop $(docker ps -q --filter name=${{ env.imagename }})
+          docker stop ${{ env.imagename }}
           docker rmi ${{ env.imagename }}
           docker build -t ${{ env.imagename }} .
   
