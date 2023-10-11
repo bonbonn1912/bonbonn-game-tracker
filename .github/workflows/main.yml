@@ -26,9 +26,10 @@ jobs:
         port: 22
           
         script: |
-          ls -l
+          echo ls -l
           docker stop -f ${{ env.CONTAINER }}
           docker rmi -f ${{ env.IMAGENAME }}
+          echo docker imgage list
           echo ${{ env.IMAGENAME }} 
           cd /home/bonbonn-game-tracker
           git pull
