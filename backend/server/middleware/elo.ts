@@ -20,7 +20,8 @@ const getFaceitElo = async (req: Request, res: Response, next: NextFunction) => 
     player.local = rankInformation
     req.player = player
     next()
-  } catch {
+  } catch(e) {
+    console.log(e)
     res.status(200).send('Invalid username')
   }
 }

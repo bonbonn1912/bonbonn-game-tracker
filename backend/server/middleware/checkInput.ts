@@ -4,7 +4,7 @@ import { SECRETS } from '../../config/env'
 
 const checkEloInput = (req: Request, res: Response, next: NextFunction) => {
   const username: any = req.query.username
-
+  console.log("Username from checkelo: " + username)
   if (username == undefined || !validFaceitUsername(username)) {
     res.status(200).send("Nicknames can be made of letters (a-z, A-Z), numbers (0-9), '_' and '-' only. 3-12 characters")
     return
