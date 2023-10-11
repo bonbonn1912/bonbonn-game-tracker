@@ -12,7 +12,8 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
+    env:
+      IMAGENAME: bonbonn-game-tracker
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:       
     - name: Deploy using ssh
@@ -23,12 +24,12 @@ jobs:
         key: ${{ secrets.password }}
         port: 22
         script: |
-          echo ${{ env.imagename }} 
+          echo ${{ env.IMAGENAME }} 
           cd /home/bonbonn-game-tracker
           git pull
-          #   docker stop ${{ env.imagename }}
-          #   docker rmi ${{ env.imagename }}
-          docker build -t ${{ env.imagename }} .
+          #   docker stop ${{ env.IMAGENAME }}
+          #   docker rmi ${{ env.IMAGENAME }}
+          docker build -t ${{ env.IMAGENAME }} .
   
   
           # Run the new Docker container from the newly built image
