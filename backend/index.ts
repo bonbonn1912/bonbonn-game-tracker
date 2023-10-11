@@ -9,4 +9,4 @@ getLiveGames().then(games =>{
     console.log(games.length)
     initLiveGames(games)
 })
-server.listen(SECRETS.PORT, () => { console.log(`Server in container listening on port ${SECRETS.PORT}`) })
+server.listen(SECRETS.PORT, () => { console.log(`Server In Container Listening On Port: ${SECRETS.PORT}`) })
