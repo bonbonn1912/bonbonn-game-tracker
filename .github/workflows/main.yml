@@ -25,10 +25,10 @@ jobs:
         script: |
           cd /home/bonbonn-game-tracker
           git pull
-          docker stop $(docker ps -q --filter name=${{ secrets.imagename }})
-          docker rmi ${{ secrets.imagename }}
-          docker build -t ${{ secrets.imagename }} .
+          docker stop $(docker ps -q --filter name=${{ env.imagename }})
+          docker rmi ${{ env.imagename }}
+          docker build -t ${{ env.imagename }} .
   
   
           # Run the new Docker container from the newly built image
-          docker run -d --name ${{ secrets.imagename }} -p 12000:12000 ${{ secrets.imagename }}
+          docker run -d --name ${{ env.imagename }} -p 12000:12000 ${{ env.imagename }}
