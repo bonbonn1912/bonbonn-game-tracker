@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev1": "set NODE_ENV=dev&&set ts_node=true&&nodemon --exec ts-node backend/index.ts",
     "dev": "export NODE_ENV=dev&&export ts_node=true&&nodemon --exec ts-node backend/index.ts",
-    "prod": "npm install&&tsc&&ls -l",
+    "prod": "npm install&&tsc&&ls -l&&cd build&&ls -l&&cd backend&&ls -l",
     "heroku": "npm install&&tsc&& node build/backend/index.js",
     "lint":  "eslint --ext .js,.ts ."
   },
