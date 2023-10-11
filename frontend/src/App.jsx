@@ -13,7 +13,7 @@ function App() {
 
   return (
     <div className='text-3xl'>
-      <button onClick={sendRequest}>Send Request!</button>
+      <button onClick={sendRequest}>Send Request! :O</button>
     </div>
   )
 }
