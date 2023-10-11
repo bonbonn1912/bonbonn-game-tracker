@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMAGENAME: bonbonn-game-tracker
+      CONTAINER: bonbonn-gt
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:       
     - name: Deploy using ssh
@@ -26,7 +27,7 @@ jobs:
           
         script: |
           ls -l
-          docker stop -f ${{ env.IMAGENAME }}
+          docker stop -f ${{ env.CONTAINER }}
           docker rmi -f ${{ env.IMAGENAME }}
           echo ${{ env.IMAGENAME }} 
           cd /home/bonbonn-game-tracker
@@ -35,4 +36,4 @@ jobs:
           #docker start ${{ env.IMAGENAME }}
   
           # Run the new Docker container from the newly built image
-          docker run -d --name ${{ env.IMAGENAME }} -p 12000:12000 ${{ env.IMAGENAME }}
+          docker run -d --name ${{ env.CONTAINER }} -p 12000:12000 ${{ env.IMAGENAME }}
