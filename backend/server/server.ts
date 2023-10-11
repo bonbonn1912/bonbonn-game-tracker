@@ -28,4 +28,8 @@ server.use(legacyPostRouter)
 
 server.use(defaultRouter)
 
+server.get("/*", (req, res) =>{
+  res.status(404).json({"message" : "not found"})
+})
+
 export default server
