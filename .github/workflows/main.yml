@@ -39,4 +39,4 @@ jobs:
           git pull
           docker build -t ${{ env.IMAGENAME }} .
           #docker start ${{ env.IMAGENAME }}
-          docker run --restart=always -d --name ${{ env.CONTAINER }} -p 127:0.0.1:12000:12000 ${{ env.IMAGENAME }}
+          docker run -p 127.0.0.1:12000:12000 --restart=always -d --name ${{ env.CONTAINER }} ${{ env.IMAGENAME }}
