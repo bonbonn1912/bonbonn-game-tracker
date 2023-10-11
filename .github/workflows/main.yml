@@ -23,12 +23,14 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.password }}
         port: 22
+        before_script: 
+          echo before script
+          docker stop ${{ env.IMAGENAME }}
+          docker rmi ${{ env.IMAGENAME }}
         script: |
           echo ${{ env.IMAGENAME }} 
           cd /home/bonbonn-game-tracker
           git pull
-          docker stop ${{ env.IMAGENAME }}
-          docker rmi ${{ env.IMAGENAME }}
           docker build -t ${{ env.IMAGENAME }} .
   
   
