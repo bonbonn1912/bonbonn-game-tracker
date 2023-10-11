@@ -23,10 +23,11 @@ jobs:
         key: ${{ secrets.password }}
         port: 22
         script: |
+          echo ${{ env.imagename }} 
           cd /home/bonbonn-game-tracker
           git pull
-          docker stop ${{ env.imagename }}
-          docker rmi ${{ env.imagename }}
+          #   docker stop ${{ env.imagename }}
+          #   docker rmi ${{ env.imagename }}
           docker build -t ${{ env.imagename }} .
   
   
