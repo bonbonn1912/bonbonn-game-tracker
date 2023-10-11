@@ -29,6 +29,7 @@ jobs:
           docker image list
           docker ps
           docker stop ${{ env.CONTAINER }} -f
+          docker rm ${{ env.CONTAINER }} -f
           docker rmi ${{ env.IMAGENAME }} -f
           echo ----------------------------------------------------
           docker image list
