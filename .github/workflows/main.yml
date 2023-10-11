@@ -39,4 +39,4 @@ jobs:
           git pull
           docker build -t ${{ env.IMAGENAME }} .
           #docker start ${{ env.IMAGENAME }}
-          docker run -d --name ${{ env.CONTAINER }} -p 12000:12000 ${{ env.IMAGENAME }}
+          docker run --restart=always -d --name ${{ env.CONTAINER }} -p 12000:12000 ${{ env.IMAGENAME }}
