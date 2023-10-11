@@ -33,4 +33,4 @@ jobs:
   
   
           # Run the new Docker container from the newly built image
-          docker run -d --name ${{ env.imagename }} -p 12000:12000 ${{ env.imagename }}
+          docker run -d --name ${{ env.IMAGENAME }} -p 12000:12000 ${{ env.IMAGENAME }}
