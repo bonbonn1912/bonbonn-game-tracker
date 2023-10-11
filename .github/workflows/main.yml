@@ -25,6 +25,7 @@ jobs:
         port: 22
           
         script: |
+          ls -l
           docker stop ${{ env.IMAGENAME }}
           docker rmi ${{ env.IMAGENAME }}
           echo ${{ env.IMAGENAME }} 
@@ -34,4 +35,4 @@ jobs:
           #docker start ${{ env.IMAGENAME }}
   
           # Run the new Docker container from the newly built image
-          docker run -d --name ${{ env.IMAGENAME }} -p 12000:12000 ${{ env.IMAGENAME }}
+          #docker run -d --name ${{ env.IMAGENAME }} -p 12000:12000 ${{ env.IMAGENAME }}
