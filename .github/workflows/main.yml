@@ -31,7 +31,7 @@ jobs:
           cd /home/bonbonn-game-tracker
           git pull
           docker build -t ${{ env.IMAGENAME }} .
-          docker start ${{ env.IMAGENAME }}
+          #docker start ${{ env.IMAGENAME }}
   
           # Run the new Docker container from the newly built image
-          #docker run -d --name ${{ env.IMAGENAME }} -p 12000:12000 ${{ env.IMAGENAME }}
+          docker run -d --name ${{ env.IMAGENAME }} -p 12000:12000 ${{ env.IMAGENAME }}
