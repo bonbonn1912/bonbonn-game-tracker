@@ -2,7 +2,7 @@ FROM alpine:latest
 
 RUN apk add --update nodejs npm
 
-WORKDIR /app
+WORKDIR /
 
 COPY package*.json ./
 
