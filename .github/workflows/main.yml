@@ -27,8 +27,8 @@ jobs:
           echo ${{ env.IMAGENAME }} 
           cd /home/bonbonn-game-tracker
           git pull
-          #   docker stop ${{ env.IMAGENAME }}
-          #   docker rmi ${{ env.IMAGENAME }}
+          docker stop ${{ env.IMAGENAME }}
+          docker rmi ${{ env.IMAGENAME }}
           docker build -t ${{ env.IMAGENAME }} .
   
   
