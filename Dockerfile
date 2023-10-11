@@ -10,10 +10,4 @@ RUN npm install
 
 COPY . .
 
-WORKDIR /app/frontend
-
-RUN npm install
-
-WORKDIR /app
-
 CMD ["npm", "run", "prod"]

@@ -3,7 +3,7 @@ import { getMap } from "../../util/faceit/matchroom/getMap"
 import teamFromMatch, { rosterPLayer} from "../../@types/roster"
 import { getFaceitPlayer } from "../../util/faceit/player/getEloFromFaceitApi"
 import webHookBody, { matchup, firstTeam, secondTeam } from "../../@types/webhook"
-import { SECRETS } from "../../config/env"
+import { SECRETS } from "../../env"
 import { removeGame, getGame, isLive } from "../../util/liveGames"
 import { alreadyLive, mongoUpdate } from "../../util/database/addToDatabase"
 

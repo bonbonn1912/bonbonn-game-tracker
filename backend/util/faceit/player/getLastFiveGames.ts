@@ -1,4 +1,4 @@
-import { SECRETS } from '../../../config/env'
+import { SECRETS } from '../../../env'
 
 import { type faceitMatchHistory } from '../../../@types/player'
 

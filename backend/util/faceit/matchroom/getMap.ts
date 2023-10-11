@@ -1,4 +1,4 @@
-import { SECRETS } from "../../../config/env";
+import { SECRETS } from "../../../env";
 import matchroom from "../../../@types/matchroom";
 
 const getMap = async (matchId: string) : Promise<string> => {

@@ -2,7 +2,7 @@ import mongoose, { type Schema } from 'mongoose'
 import type faceitPlayerReponse from '../../@types/player'
 import { playerSchema } from './Schema/playerSchema'
 import { webHookBodySchema } from './Schema/webHookBodySchema'
-import { SECRETS } from '../../config/env'
+import { SECRETS } from '../../env'
 import { type InsertType } from '../../@types/insertTypes'
 import type webHookBody from '../../@types/webhook'
 

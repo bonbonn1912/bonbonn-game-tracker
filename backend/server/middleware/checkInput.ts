@@ -1,6 +1,6 @@
 import { type Request, type Response, type NextFunction } from 'express'
 import { validFaceitUsername, validSteam64Id, validFaceitId, validLimit } from '../../util/validRequestParameter'
-import { SECRETS } from '../../config/env'
+import { SECRETS } from '../../env'
 
 const checkEloInput = (req: Request, res: Response, next: NextFunction) => {
   const username: any = req.query.username

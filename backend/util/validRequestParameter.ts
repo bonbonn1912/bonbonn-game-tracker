@@ -1,4 +1,4 @@
-import { SECRETS } from '../config/env'
+import { SECRETS } from '../env'
 
 const validFaceitUsername = (username: string): boolean => {
   const regexp = new RegExp(SECRETS.regex.faceitUsername)

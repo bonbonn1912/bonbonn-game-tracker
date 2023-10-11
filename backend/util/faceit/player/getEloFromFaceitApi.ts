@@ -1,4 +1,4 @@
-import { SECRETS } from '../../../config/env'
+import { SECRETS } from '../../../env'
 
 import type faceitPlayerReponse from '../../../@types/player'
 

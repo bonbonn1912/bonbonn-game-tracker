@@ -1,5 +1,5 @@
 import server from './server/server'
-import { SECRETS } from './config/env'
+import { SECRETS } from './env'
 import { getLiveGames } from './util/database/addToDatabase'
 import { initLiveGames } from './util/liveGames'
 import webHookBody from './@types/webhook'

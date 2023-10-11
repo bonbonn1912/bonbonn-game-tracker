@@ -1,4 +1,4 @@
-import { SECRETS } from '../../../config/env'
+import { SECRETS } from '../../../env'
 import { type matchHistory } from '../../../@types/customHistory'
 
 const getCustomFaceitHistory = async (faceitId: string, limit: number): Promise<matchHistory> => {
