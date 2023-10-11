@@ -27,9 +27,9 @@ jobs:
           
         script: |
           echo ls -l
-          docker stop -f ${{ env.CONTAINER }}
-          docker rmi -f ${{ env.IMAGENAME }}
-          echo docker imgage list
+          docker stop ${{ env.CONTAINER }} -f
+          docker rmi ${{ env.IMAGENAME }} -f
+          docker image list
           echo ${{ env.IMAGENAME }} 
           cd /home/bonbonn-game-tracker
           git pull
