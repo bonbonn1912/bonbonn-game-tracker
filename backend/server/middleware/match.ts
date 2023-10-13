@@ -66,7 +66,7 @@ const getAvgElo =  async (roster: rosterPLayer[]): Promise<number> =>{
         getFaceitPlayer(roster[4].nickname)
     ]).then(players =>{
         players.forEach(singleplayer =>{
-            teamElo.push(singleplayer.games.csgo.faceit_elo)
+            teamElo.push(singleplayer.games.cs2?.faceit_elo as number)
         })
         avgElo = Math.floor(teamElo.reduce((curr: number, next: number) => curr + next,0)/5)
     }).catch(err =>{
