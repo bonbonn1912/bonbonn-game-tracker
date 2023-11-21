@@ -103,7 +103,7 @@ const redirectToMatchroom = async (req: Request, res: Response) =>{
 }
 
 const validateGameMode = async (req: Request, res: Response, next: NextFunction) =>{
-    if(req.body.payload.entity.type === "matchmaking"){
+    if(req.body.payload.entity.type === "matchmaking" || req.body.payload.entity.type  === "hub"){
         next();
     }else{
         res.send("Invalid Gamemode")
