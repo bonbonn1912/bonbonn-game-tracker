@@ -5,6 +5,7 @@ import { webHookBodySchema } from './Schema/webHookBodySchema'
 import { SECRETS } from '../../env'
 import { type InsertType } from '../../@types/insertTypes'
 import type webHookBody from '../../@types/webhook'
+import logSchema from './Schema/logSchema'
 
 const addPlayerToDB = async (player: faceitPlayerReponse, insertType: InsertType) => {
   player.insertType = insertType
@@ -47,6 +48,27 @@ const mongoInsert = async (document: webHookBody | faceitPlayerReponse, schema: 
   mongoose.set('strictQuery', true)
   const Model = getModel(schema, collection)
   const entry = new Model(document)
+  let connectResult = await getConnection()
+  if (connectResult != undefined) {
+    await entry.save((err: Error) => {
+      if (err) {
+        console.log(err)
+      } else {
+        console.log(`Added Entry to collection ${collection}`)
+      }
+      mongoose.disconnect()
+    })
+  }
+}
+
+
+const logInsert = async (text: object, collection: string) => {
+  console.log(text)
+  console.log(collection)
+  mongoose.set('strictQuery', true)
+  const Model = getModel(extendSchema(logSchema, true), collection)
+  console.log(Model)
+  const entry = new Model(text)
   let connectResult = await getConnection()
   if (connectResult != undefined) {
     await entry.save((err: Error) => {
@@ -117,4 +139,4 @@ const getLiveGames = async () : Promise<webHookBody[]> =>{
   return matches
 }
 
-export { addPlayerToDB, addMatchroomToDB, mongoUpdate, getLiveGames, alreadyLive }
+export { addPlayerToDB, addMatchroomToDB, mongoUpdate, getLiveGames, alreadyLive, logInsert }

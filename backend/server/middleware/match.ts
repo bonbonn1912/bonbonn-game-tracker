@@ -4,8 +4,8 @@ import teamFromMatch, { rosterPLayer} from "../../@types/roster"
 import { getFaceitPlayer } from "../../util/faceit/player/getEloFromFaceitApi"
 import webHookBody, { matchup, firstTeam, secondTeam } from "../../@types/webhook"
 import { SECRETS } from "../../env"
-import { removeGame, getGame, isLive } from "../../util/liveGames"
-import { alreadyLive, mongoUpdate } from "../../util/database/addToDatabase"
+import { removeGame, getGame, isLive, redirectUrl } from "../../util/liveGames"
+import { alreadyLive, logInsert, mongoUpdate } from "../../util/database/addToDatabase"
 
 
 
@@ -94,6 +94,11 @@ const validateStreamerGame = async(req: Request, res: Response, next: NextFuncti
 }
 
 const redirectToMatchroom = async (req: Request, res: Response) =>{
+    try{
+        logInsert({text: "Accessing Game for" + req.query.key + " Streamer: " + redirectUrl.get(req.query.key as string)}, "logs")
+    }catch(e){
+        console.log("Could not log access")
+    }
     if(isLive(req.query.key as string)){
         let game: webHookBody | undefined = getGame(req.query.key as string)
         res.redirect(`https://www.faceit.com/en/csgo/room/${game?.payload.id}`)

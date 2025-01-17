@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 import path from "path";
 const NODE_ENV: string =
   process.env.NODE_ENV == "dev" ? process.env.NODE_ENV : "production";
-const envPath: string = path.join(__dirname, `./../../${NODE_ENV}.env`);
+const envPath: string = path.join(__dirname, `./../${NODE_ENV}.env`);
 
 dotenv.config({ path: envPath });
 
