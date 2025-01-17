@@ -95,7 +95,13 @@ const validateStreamerGame = async(req: Request, res: Response, next: NextFuncti
 
 const redirectToMatchroom = async (req: Request, res: Response) =>{
     try{
-        logInsert({text: "Accessing Game for" + req.query.key + " Streamer: " + redirectUrl.get(req.query.key as string) + "IP: " +   req.socket.remoteAddress || req.headers['x-forwarded-for'] }, "logs")
+       if (req.query.key !== "f335cfd1-3a92-4365-9b25-2f0e82a6052f") {
+    logInsert({ 
+        text: "Accessing Game for " + req.query.key + 
+              " Streamer: " + redirectUrl.get(req.query.key as string) + 
+              " IP: " + (req.socket.remoteAddress || req.headers['x-forwarded-for'])
+    }, "logs");
+}
     }catch(e){
         console.log("Could not log access")
     }
