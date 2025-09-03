@@ -31,7 +31,7 @@ const appendWinRate = (matchHistory: string[]) => {
 }
 
 const matchRoomResponse = (match: webHookBody, streamer: string) : string =>{
-  let lobbyUrl: string | undefined = isStreamer(streamer) ? redirectUrl.get(streamer) : `https://www.faceit.com/en/csgo/room/${match.payload.id}`
+  let lobbyUrl: string | undefined = isStreamer(streamer) ? redirectUrl.get(streamer) : `https://www.faceit.com/en/cs2/room/${match.payload.id}`
   return `${match.matchup.team1.name} (${match.matchup.team1.avgElo}) vs. ${match.matchup.team2.name} (${match.matchup.team2.avgElo}) on ${match.map}. Link zum Matchroom: ${lobbyUrl}`
 }
 
