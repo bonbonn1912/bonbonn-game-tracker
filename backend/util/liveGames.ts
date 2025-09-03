@@ -9,6 +9,7 @@ let redirectUrl: Map<string, string> = new Map([
      ["e64b6d73-6313-4527-b313-a852e6368cf2","http://redcs.faceitlobby.com"],
      ["c77a24f9-4126-4321-9cc5-4dfcf69b50ee","http://bulmi.faceitlobby.com"],
      ["f8bd2fd4-1860-441e-8851-3469dd3a1a55","http://tiziaN.faceitlobby.com"],
+     ["0deeb9bd-c453-4a02-94fe-d8ca83565f0f", "http://syrinxx.faceitlobby.com"]
  //   ["179d5eb7-be1a-473a-8bc5-36310ebc0f28","http://missmoeppi.faceitlobby.com"]
 ]
    
