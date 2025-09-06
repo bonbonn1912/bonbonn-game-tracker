@@ -55,6 +55,7 @@ const getGame = (key: string) : webHookBody | undefined=> {
     if(liveGames.has(key)){
         return liveGames.get(key)
     }
+    console.log("no live game return undefined")
     return undefined
 }
  
