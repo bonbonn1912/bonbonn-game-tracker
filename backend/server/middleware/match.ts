@@ -10,8 +10,10 @@ import { alreadyLive, logInsert, mongoUpdate } from "../../util/database/addToDa
 
 
 const validateEvent = async (req: Request, res: Response, next: NextFunction) =>{
+    console.log("Validate Event and get Map")
     if(req.body.event === 'match_status_configuring'){
         req.body.map = await getMap(req.body.payload.id)
+        console.log(" Map: " + req.body.map)
         next()
     }else if(req.body.event !== 'match_object_created'){
         removeGame(req.headers.authorization as string)
@@ -24,9 +26,10 @@ const validateEvent = async (req: Request, res: Response, next: NextFunction) =>
 
 const validateAuthorizationHeader = (req: Request, res: Response, next: NextFunction) =>{
     const regexp = new RegExp(SECRETS.regex.faceitId)
-    console.log(regexp.test(req.headers.authorization as string))
+    console.log("Test auth header" +req.headers.authorization + "/ result:" + regexp.test(req.headers.authorization as string))
     if(regexp.test(req.headers.authorization as string)){
         req.body.streamer = req.headers.authorization
+        console.log("Auth Successfull / Streamer : " + req.body.streamer)
         next()
     }else{
         res.send("Invalid Authorization Header")
@@ -51,6 +54,7 @@ const addEloInformation = async (req: Request, res: Response, next: NextFunction
         team2: secondTeam
     }
     req.body.matchup = matchup
+    console.log("matchup: " + JSON.stringify(req.body.matchup))
     next();
 }
 

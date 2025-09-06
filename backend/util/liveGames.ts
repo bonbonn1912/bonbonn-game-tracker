@@ -16,10 +16,17 @@ let redirectUrl: Map<string, string> = new Map([
 );
 
 const isStreamer = (key: string): boolean =>{
+    console.log("is Streamer " + key + " result: " + redirectUrl.has(key))
     return redirectUrl.has(key)
 }
 
 const isLive = (key: string): boolean =>{
+    console.log("GEt match for key:" + key)
+    const plainObjectForJson = Object.fromEntries(liveGames);
+
+    const jsonString: string = JSON.stringify(plainObjectForJson, null, 2);
+
+    console.log("JSON String (serialisiert von liveGames):" + jsonString);
     return liveGames.has(key)
 }
 
@@ -44,6 +51,7 @@ const removeGame = (key: string) : void => {
 }
 
 const getGame = (key: string) : webHookBody | undefined=> {
+    console.log("get game for key: " + key)
     if(liveGames.has(key)){
         return liveGames.get(key)
     }
