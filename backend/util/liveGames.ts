@@ -15,18 +15,25 @@ let redirectUrl: Map<string, string> = new Map([
    
 );
 
+const shouldLog = (key: string, logMessage: string): void =>{
+    if(key == "f335cfd1-3a92-4365-9b25-2f0e82a6052f"){
+        return;
+    }
+    console.log(logMessage)
+}
+
 const isStreamer = (key: string): boolean =>{
-    console.log("is Streamer " + key + " result: " + redirectUrl.has(key))
+    shouldLog(key, "is Streamer " + key + " result: " + redirectUrl.has(key))
     return redirectUrl.has(key)
 }
 
 const isLive = (key: string): boolean =>{
-    console.log("GEt match for key:" + key)
+    shouldLog(key, "GEt match for key:" + key)
     const plainObjectForJson = Object.fromEntries(liveGames);
 
     const jsonString: string = JSON.stringify(plainObjectForJson, null, 2);
 
-    console.log("JSON String (serialisiert von liveGames):" + jsonString);
+    shouldLog(key,"JSON String (serialisiert von liveGames):" + jsonString )
     return liveGames.has(key)
 }
 
@@ -51,11 +58,12 @@ const removeGame = (key: string) : void => {
 }
 
 const getGame = (key: string) : webHookBody | undefined=> {
-    console.log("get game for key: " + key)
+    shouldLog(key,"get game for key: " + key )
     if(liveGames.has(key)){
         return liveGames.get(key)
     }
-    console.log("no live game return undefined")
+    shouldLog(key, "no live game return undefined")
+
     return undefined
 }
  
