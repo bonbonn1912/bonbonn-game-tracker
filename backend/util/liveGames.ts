@@ -40,6 +40,7 @@ const isLive = (key: string): boolean =>{
 const addGame = (key: string, game: webHookBody): void =>{
     liveGames.set(key, game)
     console.log("Added Game for Player " + key)
+    console.log("current livegames: for key" + key + " -> " + JSON.stringify(game))
 }
 
 const initLiveGames = (games: webHookBody[]): void =>{
@@ -60,6 +61,7 @@ const removeGame = (key: string) : void => {
 const getGame = (key: string) : webHookBody | undefined=> {
     shouldLog(key,"get game for key: " + key )
     if(liveGames.has(key)){
+        shouldLog(key, "found games for key: " + key + " "+ liveGames.get(key))
         return liveGames.get(key)
     }
     shouldLog(key, "no live game return undefined")
