@@ -129,6 +129,19 @@ func TestHistoryMongoReview(t *testing.T) {
 	defer func() { s.db.Drop(context.Background()); s.Close(context.Background()) }()
 	exerciseWebhookHistory(t, s)
 
+	// A retried delivery repairs a count update interrupted after match storage.
+	playerID := "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+	if _, err = s.webhookPlayersCol.UpdateOne(ctx, bson.M{"_id": playerID}, bson.M{"$set": bson.M{"gameCount": 0}}); err != nil {
+		t.Fatal(err)
+	}
+	retry := map[string]interface{}{"event": "match_status_finished", "payload": map[string]interface{}{"id": "past-054"}}
+	if err = s.RecordWebhook(ctx, playerID, "KnownNickname", retry); err != nil {
+		t.Fatal(err)
+	}
+	repaired, err := s.GetWebhookPlayer(ctx, playerID)
+	if err != nil || repaired.GameCount != 56 {
+		t.Fatalf("retry did not repair count: %+v %v", repaired, err)
+	}
 	// Reuse pre-existing index names without changing their constraints.
 	if err = s.streamerCol.Indexes().DropOne(ctx, "name_1"); err != nil {
 		t.Fatal(err)

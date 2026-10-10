@@ -295,7 +295,9 @@ func (m *MongoStore) backfillMatchrooms(ctx context.Context) error {
 	}
 
 	for sID := range streamersSeen {
-		m.syncPlayerGameCount(ctx, sID)
+		if err := m.syncPlayerGameCount(ctx, sID); err != nil {
+			return err
+		}
 	}
 
 	_, err = m.migrations.InsertOne(ctx, bson.M{
@@ -308,16 +310,15 @@ func (m *MongoStore) backfillMatchrooms(ctx context.Context) error {
 	return nil
 }
 
-func (m *MongoStore) syncPlayerGameCount(ctx context.Context, playerID string) {
-	count, err := m.webhookMatchesCol.CountDocuments(ctx, bson.M{
-		"playerId": playerID,
-		"matchId":  bson.M{"$ne": ""},
-	})
-	if err == nil {
-		_, _ = m.webhookPlayersCol.UpdateOne(ctx, bson.M{"_id": playerID}, bson.M{
-			"$set": bson.M{"gameCount": int(count)},
-		})
+func (m *MongoStore) syncPlayerGameCount(ctx context.Context, playerID string) error {
+	count, err := m.webhookMatchesCol.CountDocuments(ctx, bson.M{"playerId": playerID, "matchId": bson.M{"$ne": ""}})
+	if err != nil {
+		return err
 	}
+	// The history only grows. Concurrent deliveries must not replace a newer
+	// count with an older snapshot, and retries repair interrupted count updates.
+	_, err = m.webhookPlayersCol.UpdateOne(ctx, bson.M{"_id": playerID}, bson.M{"$max": bson.M{"gameCount": int(count)}})
+	return err
 }
 
 func (m *MongoStore) GetStreamers(ctx context.Context) ([]models.Streamer, error) {
@@ -580,7 +581,9 @@ func (m *MongoStore) AddLiveMatch(ctx context.Context, streamerID string, matchD
 				"event":       "match_status_configuring",
 			}
 			_, _ = m.webhookMatchesCol.UpdateOne(ctx, matchFilter, bson.M{"$setOnInsert": newDoc}, options.UpdateOne().SetUpsert(true))
-			m.syncPlayerGameCount(ctx, streamerID)
+			if err := m.syncPlayerGameCount(ctx, streamerID); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -622,14 +625,14 @@ func (m *MongoStore) CloseLiveMatch(ctx context.Context, streamerID string) erro
 	// Close matching live match in webhook_matches for streamerID only (without global impact)
 	now := time.Now().UTC().Format(time.RFC3339Nano)
 	matchFilter := bson.M{"playerId": streamerID, "status": "live"}
-	_, _ = m.webhookMatchesCol.UpdateMany(ctx, matchFilter, bson.M{
+	_, err = m.webhookMatchesCol.UpdateMany(ctx, matchFilter, bson.M{
 		"$set": bson.M{
 			"status":     "closed",
 			"lastSeenAt": now,
 		},
 	})
 
-	return nil
+	return err
 }
 
 func (m *MongoStore) GetAllLiveMatches(ctx context.Context) (map[string]map[string]interface{}, error) {
@@ -760,7 +763,6 @@ func (m *MongoStore) RecordWebhook(ctx context.Context, playerID string, resolve
 			if err != nil {
 				return fmt.Errorf("failed to insert canonical match: %w", err)
 			}
-			m.syncPlayerGameCount(ctx, playerID)
 		} else {
 			existing := normalizeBSON(existingRaw)
 			// Update existing canonical record, merging late closing events without overwriting richer configuring data
@@ -795,7 +797,7 @@ func (m *MongoStore) RecordWebhook(ctx context.Context, playerID string, resolve
 		}
 	}
 
-	return nil
+	return m.syncPlayerGameCount(ctx, playerID)
 }
 
 // GetWebhookPlayer returns a single tracked player by ID.
