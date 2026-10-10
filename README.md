@@ -64,9 +64,9 @@ Legacy details are intentional: ELO returns both `(csgo)` and optional `(cs2)` v
 
 GitHub Actions runs `go vet` and race-enabled tests, including integration tests against MongoDB, then deploys the exact tested commit over SSH. Deployment runs on pushes to `main` and `refactor/go-mongodb-admin`, or via the workflow's manual branch selector. Secrets required in GitHub: `HOST`, `USERNAME`, `PASSWORD` (SSH private key), `PORT` and `SSH_HOST_FINGERPRINT`.
 
-Server checkout and secret configuration: `/opt/faceit-game-tracker/.env` (mode 0600). The workflow preserves this file, builds the application, and runs `docker compose up -d --wait`. Caddy is configured separately using `deploy/Caddyfile.faceitlobby`, appended to its existing configuration and reloaded after validation. It reaches the application as `bonbonn-api:12000` on the existing `monitoring` network.
+Server checkout and secret configuration: `/opt/faceit-game-tracker/.env` (mode 0600). The workflow preserves this file, builds the application, and runs `docker compose up -d --wait`. It idempotently appends the webhook site from `deploy/Caddyfile.faceitlobby` to `/etc/caddy/Caddyfile`, validates and reloads Caddy, then checks the webhook host over HTTPS. Caddy reaches the application as `bonbonn-api:12000` on the existing `monitoring` network.
 
-Set A records for `api.faceitlobby.com` and `admin.faceitlobby.com` to `84.247.175.201`; remove AAAA records pointing elsewhere. Caddy obtains HTTPS certificates automatically when DNS points to the server. Existing streamer subdomains in the imported lobby mappings retain their existing URLs; their DNS must also reach the appropriate redirect service.
+Set A records for `api.faceitlobby.com`, `webhook.faceitlobby.com` and `admin.faceitlobby.com` to `84.247.175.201`; remove AAAA records pointing elsewhere. Caddy obtains HTTPS certificates automatically when DNS points to the server. Incoming FACEIT POST webhooks use `https://webhook.faceitlobby.com/match`. Existing streamer subdomains in the imported lobby mappings retain their existing URLs; their DNS must also reach the appropriate redirect service.
 
 ## Verification
 

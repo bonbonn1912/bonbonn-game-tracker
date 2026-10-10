@@ -7,6 +7,12 @@ api.faceitlobby.com {
     reverse_proxy bonbonn-api:12000
 }
 
+webhook.faceitlobby.com {
+    log access
+    encode zstd gzip
+    reverse_proxy bonbonn-api:12000
+}
+
 admin.faceitlobby.com {
     log access
     encode zstd gzip

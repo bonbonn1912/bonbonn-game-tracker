@@ -107,5 +107,46 @@ jobs:
             echo "Starting containers with docker compose up -d --wait..."
             docker compose up -d --wait
 
+            # Keep the dedicated webhook hostname configured in Caddy while preserving
+            # the host's existing API, admin, and unrelated site configuration.
+            CADDYFILE="/etc/caddy/Caddyfile"
+            if ! sudo test -f "${CADDYFILE}"; then
+              echo "ERROR: ${CADDYFILE} not found; cannot configure webhook TLS host."
+              exit 1
+            fi
+            if ! sudo grep -Fq 'webhook.faceitlobby.com {' "${CADDYFILE}"; then
+              CADDY_BACKUP="${CADDYFILE}.bak.$(date +%Y%m%d%H%M%S)"
+              sudo cp "${CADDYFILE}" "${CADDY_BACKUP}"
+              sudo tee -a "${CADDYFILE}" >/dev/null <<'CADDY'
+
+webhook.faceitlobby.com {
+    log access
+    encode zstd gzip
+    reverse_proxy bonbonn-api:12000
+}
+CADDY
+              if ! sudo caddy validate --config "${CADDYFILE}" --adapter caddyfile; then
+                sudo cp "${CADDY_BACKUP}" "${CADDYFILE}"
+                echo "ERROR: Caddy rejected the webhook host configuration; restored the previous file."
+                exit 1
+              fi
+            else
+              sudo caddy validate --config "${CADDYFILE}" --adapter caddyfile
+            fi
+            sudo systemctl reload caddy
+
+            WEBHOOK_HEALTHY="false"
+            for attempt in $(seq 1 12); do
+              if curl --fail --silent --show-error --max-time 5 https://webhook.faceitlobby.com/healthz >/dev/null; then
+                WEBHOOK_HEALTHY="true"
+                break
+              fi
+              sleep 5
+            done
+            if [ "${WEBHOOK_HEALTHY}" != "true" ]; then
+              echo "ERROR: webhook.faceitlobby.com did not become healthy over HTTPS."
+              exit 1
+            fi
+
             echo "=== Deployment successful ==="
             docker compose ps

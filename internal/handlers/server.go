@@ -64,8 +64,13 @@ func (s *Server) buildRouter() http.Handler {
 		if h, _, err := net.SplitHostPort(adminHost); err == nil {
 			adminHost = h
 		}
+		webhookHost := strings.ToLower(s.cfg.WebhookHost)
+		if h, _, err := net.SplitHostPort(webhookHost); err == nil {
+			webhookHost = h
+		}
 
 		isAdminHost := adminHost != "" && reqHost == adminHost
+		isWebhookHost := webhookHost != "" && reqHost == webhookHost
 		isLocal := isLocalHost(reqHost)
 		isPublicHost := !isAdminHost && !isLocal
 
@@ -94,6 +99,14 @@ func (s *Server) buildRouter() http.Handler {
 		// Host segregation: Public API host must BLOCK /admin and /admin/api
 		if isPublicHost && strings.HasPrefix(normPath, "/admin") {
 			s.legacy.HandleNotFound(w, r)
+			return
+		}
+
+		// The dedicated webhook host serves the public API, including POST /match.
+		if isWebhookHost {
+			PublicCORSMiddleware(http.HandlerFunc(func(pw http.ResponseWriter, pr *http.Request) {
+				s.dispatchPublicRoute(pw, pr, normPath)
+			})).ServeHTTP(w, r)
 			return
 		}
 
