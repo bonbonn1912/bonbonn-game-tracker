@@ -1,3 +1,5 @@
+name: bonbonn-game-tracker
+
 services:
   app:
     container_name: bonbonn-gt
