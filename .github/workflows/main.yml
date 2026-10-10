@@ -1,42 +1,111 @@
-name: Deploy
+name: CI & Deploy
 
-# Controls when the action will run. 
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - refactor/go-mongodb-admin
+  workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+permissions:
+  contents: read
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  test:
+    name: Go Vet & Unit Tests
     runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:8.0
+        env:
+          MONGO_INITDB_ROOT_USERNAME: test
+          MONGO_INITDB_ROOT_PASSWORD: ci-test-password
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ping:1})'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
     env:
-      IMAGENAME: bonbonn-game-tracker
-      CONTAINER: bonbonn-gt
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:       
-    - name: Deploy using ssh
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.password }}
-        port: 22
-          
-        script: |
-          docker image list
-          docker ps
-          docker stop ${{ env.CONTAINER }} -f
-          docker rm ${{ env.CONTAINER }} -f
-          docker rmi ${{ env.IMAGENAME }} -f
-          echo ----------------------------------------------------
-          docker image list
-          docker ps
-          echo ----------------------------------------------------
-          cd /home/bonbonn-game-tracker
-          git pull
-          docker build -t ${{ env.IMAGENAME }} .
-          #docker start ${{ env.IMAGENAME }}
-          docker run -p 127.0.0.1:12000:12000 --restart=always -d --name ${{ env.CONTAINER }} ${{ env.IMAGENAME }}
+      MONGO_TEST_URI: mongodb://test:ci-test-password@127.0.0.1:27017/?authSource=admin
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go toolchain
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+          check-latest: true
+
+      - name: Go Vet
+        run: go vet ./...
+
+      - name: Go Unit Tests
+        run: go test -race -v ./...
+
+  deploy:
+    name: Deploy via SSH
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/refactor/go-mongodb-admin' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT || 22 }}
+          fingerprint: ${{ secrets.SSH_HOST_FINGERPRINT }}
+          envs: GITHUB_SHA
+          script: |
+            set -euo pipefail
+
+            DEPLOY_DIR="/home/github/bonbonn-game-tracker"
+            REPO_URL="https://github.com/${{ github.repository }}.git"
+
+            echo "=== Deploying bonbonn-game-tracker ==="
+            echo "Target commit SHA: ${GITHUB_SHA}"
+            echo "Target directory: ${DEPLOY_DIR}"
+
+            mkdir -p "${DEPLOY_DIR}"
+            cd "${DEPLOY_DIR}"
+
+            # Safe initialization for existing non-empty directory with host .env
+            if [ ! -d .git ]; then
+              echo "Initializing git repository in ${DEPLOY_DIR}..."
+              git init
+              git remote add origin "${REPO_URL}"
+            else
+              git remote set-url origin "${REPO_URL}" || true
+            fi
+
+            echo "Fetching ${GITHUB_SHA} from origin..."
+            git fetch --depth 1 origin "${GITHUB_SHA}" || git fetch origin "${GITHUB_SHA}" || git fetch origin
+
+            echo "Checking out ${GITHUB_SHA}..."
+            # NEVER execute git clean or destructive reset that removes untracked server .env
+            git checkout --force "${GITHUB_SHA}"
+
+            # Verify host .env exists without echoing secret contents
+            if [ ! -f .env ]; then
+              echo "ERROR: ${DEPLOY_DIR}/.env file not found on host. Deployment aborted."
+              exit 1
+            fi
+
+            echo "Building application image with docker compose..."
+            docker compose build
+
+            echo "Starting containers with docker compose up -d --wait..."
+            docker compose up -d --wait
+
+            echo "=== Deployment successful ==="
+            docker compose ps

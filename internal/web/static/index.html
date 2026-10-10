@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BonBonn Game Tracker - Administration</title>
+  <link rel="stylesheet" href="/admin/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <span class="brand-logo" aria-hidden="true">&#9881;</span>
+        <div>
+          <h1 class="brand-title">BonBonn Game Tracker</h1>
+          <span class="brand-subtitle">Faceit Match Tracking &amp; Redirects</span>
+        </div>
+      </div>
+      <div class="status-summary" aria-label="Systemstatus">
+        <div class="status-item">
+          <span class="status-label">Datenbank:</span>
+          <span id="db-status-badge" class="status-pill status-loading" role="status">Laden...</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Aktive Matches:</span>
+          <span id="active-matches-count" class="status-value">-</span>
+        </div>
+        <button id="btn-refresh-all" class="btn btn-secondary btn-sm" type="button" aria-label="Aktualisieren">
+          Aktualisieren
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div id="notification-area" aria-live="polite"></div>
+
+    <!-- Hauptnavigation / Tabs -->
+    <nav class="tab-nav" aria-label="Hauptnavigation" role="tablist">
+      <button id="tab-btn-players" class="tab-btn tab-active" type="button" role="tab" aria-selected="true" aria-controls="tab-panel-players" tabindex="0">
+        Spieler
+      </button>
+      <button id="tab-btn-matches" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-panel-matches" tabindex="-1">
+        Matches
+      </button>
+      <button id="tab-btn-streamers" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-panel-streamers" tabindex="-1">
+        Streamer
+      </button>
+      <button id="tab-btn-events" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-panel-events" tabindex="-1">
+        Linkaufrufe
+      </button>
+    </nav>
+
+    <!-- TAB 1: SPIELER -->
+    <div id="tab-panel-players" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-players">
+      <!-- Spieler-Liste -->
+      <div id="players-list-container">
+        <section class="card" aria-labelledby="heading-players">
+          <div class="card-header">
+            <div>
+              <h2 id="heading-players" class="card-title">Registrierte Spieler</h2>
+              <p class="card-subtitle">Faceit-Spieler mit empfangenen Webhook-Events und Spielstatistiken</p>
+            </div>
+            <div class="header-controls">
+              <button id="btn-refresh-players" class="btn btn-secondary btn-sm" type="button">
+                Aktualisieren
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="players-loading" class="state-container" role="status">
+              <div class="spinner" aria-hidden="true"></div>
+              <span>Spieler werden geladen...</span>
+            </div>
+
+            <div id="players-empty" class="state-container" hidden>
+              <span class="state-icon" aria-hidden="true">&#127918;</span>
+              <p>Noch keine Spieler mit Webhook-Daten vorhanden.</p>
+            </div>
+
+            <div id="players-table-wrapper" class="table-responsive" hidden>
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Spielername</th>
+                    <th scope="col">Faceit Player ID</th>
+                    <th scope="col">Spiele (Gesamt)</th>
+                    <th scope="col">Letzter Webhook</th>
+                    <th scope="col" class="text-right">Aktionen</th>
+                  </tr>
+                </thead>
+                <tbody id="players-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Spieler-Detail: Komplette Match-Historie -->
+      <div id="players-detail-container" hidden>
+        <section class="card" aria-labelledby="player-detail-title">
+          <div class="card-header">
+            <div class="player-detail-header">
+              <button id="btn-player-detail-back" class="btn btn-secondary btn-sm" type="button" aria-label="Zurück zur Spielerliste">
+                &larr; Zur&uuml;ck zur Spielerliste
+              </button>
+              <div>
+                <h2 id="player-detail-title" class="card-title">Spieler-Details</h2>
+                <div class="player-meta-badges">
+                  <span class="meta-label">Faceit Player ID:</span>
+                  <code id="player-detail-id" class="mono-uuid">-</code>
+                  <span class="meta-label">Spiele (Gesamt):</span>
+                  <span id="player-detail-gamecount" class="badge badge-active">-</span>
+                  <span class="meta-label">Letzter Webhook:</span>
+                  <span id="player-detail-lastwebhook" class="text-secondary">-</span>
+                </div>
+              </div>
+            </div>
+            <div class="header-controls">
+              <button id="btn-refresh-player-matches" class="btn btn-secondary btn-sm" type="button">
+                Aktualisieren
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="player-matches-loading" class="state-container" role="status">
+              <div class="spinner" aria-hidden="true"></div>
+              <span>Match-Historie wird geladen...</span>
+            </div>
+
+            <div id="player-matches-error" class="alert alert-error" role="alert" hidden></div>
+
+            <div id="player-matches-empty" class="state-container" hidden>
+              <span class="state-icon" aria-hidden="true">&#128203;</span>
+              <p>Keine Matches f&uuml;r diesen Spieler verzeichnet.</p>
+            </div>
+
+            <div id="player-matches-table-wrapper" class="table-responsive" hidden>
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Zeitpunkt</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Match-ID</th>
+                    <th scope="col">Teams &amp; Avg Elo</th>
+                    <th scope="col">Map</th>
+                    <th scope="col">Event</th>
+                  </tr>
+                </thead>
+                <tbody id="player-matches-tbody"></tbody>
+              </table>
+
+              <div class="pagination-bar">
+                <span id="player-matches-pagination-info" class="pagination-info">-</span>
+                <button id="btn-player-load-more" class="btn btn-secondary btn-sm" type="button" hidden>
+                  <span id="player-load-more-spinner" class="spinner-sm" hidden></span>
+                  Mehr laden (50)
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- TAB 2: MATCHES (LIVE + 20 PAST) -->
+    <div id="tab-panel-matches" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-matches" hidden>
+      <div class="matches-container">
+        <!-- Live-Matches -->
+        <section class="card" aria-labelledby="heading-live-matches">
+          <div class="card-header">
+            <div>
+              <h2 id="heading-live-matches" class="card-title">Aktive Live-Matches</h2>
+              <p class="card-subtitle">Derzeit laufende Faceit-Spiele</p>
+            </div>
+            <div class="header-controls">
+              <button id="btn-refresh-matches" class="btn btn-secondary btn-sm" type="button">
+                Aktualisieren
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="matches-loading" class="state-container" role="status">
+              <div class="spinner" aria-hidden="true"></div>
+              <span>Matches werden geladen...</span>
+            </div>
+
+            <div id="matches-error" class="alert alert-error" role="alert" hidden></div>
+
+            <div id="matches-live-empty" class="state-container" hidden>
+              <span class="state-icon" aria-hidden="true">&#127918;</span>
+              <p>Derzeit keine aktiven Live-Matches.</p>
+            </div>
+
+            <div id="matches-live-table-wrapper" class="table-responsive" hidden>
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Zeitpunkt</th>
+                    <th scope="col">Spieler</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Match-ID</th>
+                    <th scope="col">Teams &amp; Avg Elo</th>
+                    <th scope="col">Map</th>
+                  </tr>
+                </thead>
+                <tbody id="matches-live-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Past Matches (Last 20) -->
+        <section class="card" aria-labelledby="heading-past-matches">
+          <div class="card-header">
+            <div>
+              <h2 id="heading-past-matches" class="card-title">Letzte Matches (Beendet)</h2>
+              <p class="card-subtitle">Die letzten 20 archivierten Matches</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="matches-past-empty" class="state-container" hidden>
+              <span class="state-icon" aria-hidden="true">&#128203;</span>
+              <p>Keine beendeten Matches vorhanden.</p>
+            </div>
+
+            <div id="matches-past-table-wrapper" class="table-responsive" hidden>
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Zeitpunkt</th>
+                    <th scope="col">Spieler</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Match-ID</th>
+                    <th scope="col">Teams &amp; Avg Elo</th>
+                    <th scope="col">Map</th>
+                  </tr>
+                </thead>
+                <tbody id="matches-past-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- TAB 3: STREAMER -->
+    <div id="tab-panel-streamers" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-streamers" hidden>
+      <section class="card" aria-labelledby="heading-streamers">
+        <div class="card-header">
+          <div>
+            <h2 id="heading-streamers" class="card-title">Registrierte Streamer</h2>
+            <p class="card-subtitle">Verwaltung der Faceit Player IDs und konfigurierten Lobby-URLs</p>
+          </div>
+          <button id="btn-open-create-modal" class="btn btn-primary" type="button">
+            + Streamer hinzuf&uuml;gen
+          </button>
+        </div>
+        <div class="card-body">
+          <div id="streamers-loading" class="state-container" role="status">
+            <div class="spinner" aria-hidden="true"></div>
+            <span>Streamer werden geladen...</span>
+          </div>
+
+          <div id="streamers-empty" class="state-container" hidden>
+            <span class="state-icon" aria-hidden="true">&#128100;</span>
+            <p>Noch keine Streamer registriert.</p>
+            <button id="btn-empty-add-streamer" class="btn btn-secondary btn-sm" type="button">
+              Jetzt ersten Streamer hinzuf&uuml;gen
+            </button>
+          </div>
+
+          <div id="streamers-table-wrapper" class="table-responsive" hidden>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Status</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Faceit Player ID</th>
+                  <th scope="col">Lobby-URL (Match-Link)</th>
+                  <th scope="col">Letzter Aufruf (in Liste)</th>
+                  <th scope="col" class="text-right">Aktionen</th>
+                </tr>
+              </thead>
+              <tbody id="streamers-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 4: LINKAUFRUFE -->
+    <div id="tab-panel-events" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-events" hidden>
+      <aside class="info-callout" role="note">
+        <span class="callout-icon" aria-hidden="true">&#9432;</span>
+        <p>Aufrufe werden mit Zeitpunkt und Weiterleitungsziel protokolliert.</p>
+      </aside>
+
+      <section class="card" aria-labelledby="heading-events">
+        <div class="card-header">
+          <div>
+            <h2 id="heading-events" class="card-title">Letzte Weiterleitungen &amp; Aufrufe</h2>
+            <p class="card-subtitle">Protokoll eingehender Redirect- und Match-Events</p>
+          </div>
+          <div class="header-controls">
+            <label for="event-limit-select" class="form-label-inline">Anzahl:</label>
+            <select id="event-limit-select" class="form-select">
+              <option value="15">15</option>
+              <option value="25" selected>25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+            <button id="btn-refresh-events" class="btn btn-secondary btn-sm" type="button">
+              Neu laden
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="events-loading" class="state-container" role="status">
+            <div class="spinner" aria-hidden="true"></div>
+            <span>Events werden geladen...</span>
+          </div>
+
+          <div id="events-empty" class="state-container" hidden>
+            <p>Keine Weiterleitungs-Events gefunden.</p>
+          </div>
+
+          <div id="events-table-wrapper" class="table-responsive" hidden>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Zeitpunkt</th>
+                  <th scope="col">Streamer</th>
+                  <th scope="col">Match-ID</th>
+                  <th scope="col">Ziel</th>
+                  <th scope="col">Ergebnis</th>
+                  <th scope="col">Request-ID</th>
+                </tr>
+              </thead>
+              <tbody id="events-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <p>BonBonn Game Tracker Administration</p>
+  </footer>
+
+  <!-- Modal: Streamer Erstellen / Bearbeiten -->
+  <dialog id="streamer-modal" class="modal-dialog">
+    <form id="streamer-form" method="dialog" novalidate>
+      <div class="modal-header">
+        <h3 id="modal-title" class="modal-heading">Streamer konfigurieren</h3>
+        <button id="btn-modal-close" type="button" class="btn-close" aria-label="Schlie&szlig;en">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-error-message" class="alert alert-error" role="alert" hidden></div>
+        <input type="hidden" id="form-streamer-mode" value="create">
+
+        <div class="form-group">
+          <label for="input-streamer-id" class="form-label">
+            Faceit Player ID (UUID) <span class="required-indicator">*</span>
+          </label>
+          <input
+            type="text"
+            id="input-streamer-id"
+            name="id"
+            class="form-input"
+            placeholder="z. B. f335cfd1-3a92-4365-9b25-2f0e82a6052f"
+            pattern="^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            autocomplete="off"
+            spellcheck="false"
+            required
+          >
+          <span class="form-help">Vorhandene Faceit Player UUID (36 Zeichen hexadezimal, kleingeschrieben)</span>
+          <span id="error-streamer-id" class="field-error" role="alert" hidden></span>
+        </div>
+
+        <div class="form-group">
+          <label for="input-streamer-name" class="form-label">
+            Name / Anzeigename <span class="required-indicator">*</span>
+          </label>
+          <input
+            type="text"
+            id="input-streamer-name"
+            name="name"
+            class="form-input"
+            placeholder="z. B. BonBonn"
+            maxlength="64"
+            required
+          >
+          <span id="error-streamer-name" class="field-error" role="alert" hidden></span>
+        </div>
+
+        <div class="form-group">
+          <label for="input-streamer-url" class="form-label">
+            Lobby-URL (Match-Link) <span class="required-indicator">*</span>
+          </label>
+          <input
+            type="url"
+            id="input-streamer-url"
+            name="url"
+            class="form-input"
+            placeholder="https://www.faceit.com/en/players/..."
+            required
+          >
+          <span class="form-help">G&uuml;ltige Web-URL beginnend mit http:// oder https:// (z. B. f&uuml;r /getmatch)</span>
+          <span id="error-streamer-url" class="field-error" role="alert" hidden></span>
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="input-streamer-enabled" name="enabled" checked>
+            <span>Weiterleitung aktivieren</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-modal-cancel" type="button" class="btn btn-secondary">Abbrechen</button>
+        <button id="btn-modal-save" type="submit" class="btn btn-primary">
+          <span id="btn-modal-spinner" class="spinner-sm" hidden></span>
+          Speichern
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Modal: Löschen Bestätigen -->
+  <dialog id="delete-modal" class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-heading">Streamer l&ouml;schen</h3>
+      <button id="btn-delete-modal-close" type="button" class="btn-close" aria-label="Schlie&szlig;en">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="delete-modal-message">M&ouml;chten Sie diesen Streamer wirklich l&ouml;schen?</p>
+      <div class="callout-danger">
+        Diese Aktion kann nicht r&uuml;ckg&auml;ngig gemacht werden.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="btn-delete-modal-cancel" type="button" class="btn btn-secondary">Abbrechen</button>
+      <button id="btn-delete-modal-confirm" type="button" class="btn btn-danger">
+        <span id="btn-delete-spinner" class="spinner-sm" hidden></span>
+        Endg&uuml;ltig l&ouml;schen
+      </button>
+    </div>
+  </dialog>
+
+  <script src="/admin/app.js"></script>
+</body>
+</html>

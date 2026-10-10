@@ -1,1 +1,34 @@
-**/node_modules
+# Git & CI/CD
+.git
+.github
+
+# Node / legacy dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files and credentials (never build into image)
+.env
+.env.*
+*.env
+*.key
+*.pem
+!.env.example
+
+# Local binaries and build artifacts
+server
+*.exe
+
+# OS and Editor files
+.DS_Store
+.idea
+.vscode
+*.swp
+*.tmp
+
+# Linters and non-build artifacts
+.cspell.json
+.eslintrc.js
+.jscpd.json
+.mega-linter.yml

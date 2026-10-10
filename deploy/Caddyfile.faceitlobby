@@ -1,0 +1,18 @@
+# Append to the existing Caddyfile; the app must join the monitoring network.
+api.faceitlobby.com {
+    log access
+    encode zstd gzip
+    @admin path /admin /admin/*
+    respond @admin 404
+    reverse_proxy bonbonn-api:12000
+}
+
+admin.faceitlobby.com {
+    log access
+    encode zstd gzip
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy same-origin
+    }
+    reverse_proxy bonbonn-api:12000
+}
