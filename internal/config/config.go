@@ -22,6 +22,7 @@ type Config struct {
 	AdminUsername            string
 	AdminPassword            string
 	AdminHost                string
+	WebhookHost              string
 }
 
 // Load reads configuration from environment variables and optional .env files.
@@ -69,6 +70,7 @@ func Load(requireAdminPassword bool) (*Config, error) {
 	}
 
 	adminHost := os.Getenv("ADMIN_HOST")
+	webhookHost := os.Getenv("WEBHOOK_HOST")
 
 	return &Config{
 		Port:                     port,
@@ -82,6 +84,7 @@ func Load(requireAdminPassword bool) (*Config, error) {
 		AdminUsername:            adminUser,
 		AdminPassword:            adminPass,
 		AdminHost:                adminHost,
+		WebhookHost:              webhookHost,
 	}, nil
 }
 
