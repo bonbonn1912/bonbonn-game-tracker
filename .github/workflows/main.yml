@@ -109,9 +109,36 @@ jobs:
 
             # Keep the dedicated webhook hostname configured in Caddy while preserving
             # the host's existing API, admin, and unrelated site configuration.
-            CADDYFILE="/etc/caddy/Caddyfile"
-            if ! sudo test -f "${CADDYFILE}"; then
-              echo "ERROR: ${CADDYFILE} not found; cannot configure webhook TLS host."
+            CADDY_CONTAINER="$(docker ps --format '{{.Names}} {{.Image}}' | awk 'tolower($0) ~ /caddy/ {print $1; exit}')"
+            CADDYFILE=""
+            CADDY_RELOAD_MODE="systemd"
+            CADDYFILE_IN_CONTAINER="/etc/caddy/Caddyfile"
+            if [ -n "${CADDY_CONTAINER}" ]; then
+              CADDY_RELOAD_MODE="container"
+              CADDYFILE="$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/etc/caddy/Caddyfile"}}{{.Source}}{{end}}{{end}}' "${CADDY_CONTAINER}")"
+              if [ -z "${CADDYFILE}" ]; then
+                CADDY_DIR_MOUNT="$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/etc/caddy"}}{{.Source}}{{end}}{{end}}' "${CADDY_CONTAINER}")"
+                if [ -n "${CADDY_DIR_MOUNT}" ]; then
+                  CADDYFILE="${CADDY_DIR_MOUNT}/Caddyfile"
+                fi
+              fi
+            else
+              CADDYFILE="/etc/caddy/Caddyfile"
+              if ! sudo test -f "${CADDYFILE}"; then
+                CADDYFILE="$(sudo find /etc /opt /srv /root /home /usr/local/etc -type f -name Caddyfile -print 2>/dev/null | while IFS= read -r candidate; do
+                  if sudo grep -Fq 'api.faceitlobby.com' "${candidate}"; then
+                    echo "${candidate}"
+                    break
+                  fi
+                done || true)"
+              fi
+            fi
+            if [ -z "${CADDYFILE}" ] || { [ "${CADDY_RELOAD_MODE}" = "container" ] && ! sudo test -f "${CADDYFILE}"; } || { [ "${CADDY_RELOAD_MODE}" = "systemd" ] && ! sudo test -f "${CADDYFILE}"; }; then
+              echo "ERROR: Could not locate the active Caddyfile."
+              echo "Running Caddy containers:"
+              docker ps --format '{{.Names}} {{.Image}}' | grep -i caddy || true
+              echo "Candidate Caddyfiles:"
+              sudo find /etc /opt /srv /root /home /usr/local/etc -type f -name Caddyfile -print 2>/dev/null || true
               exit 1
             fi
             if ! sudo grep -Fq 'webhook.faceitlobby.com {' "${CADDYFILE}"; then
@@ -125,15 +152,29 @@ jobs:
                 reverse_proxy bonbonn-api:12000
             }
             CADDY
-              if ! sudo caddy validate --config "${CADDYFILE}" --adapter caddyfile; then
+              if [ "${CADDY_RELOAD_MODE}" = "container" ]; then
+                if ! docker exec "${CADDY_CONTAINER}" caddy validate --config "${CADDYFILE_IN_CONTAINER}" --adapter caddyfile; then
+                  sudo cp "${CADDY_BACKUP}" "${CADDYFILE}"
+                  echo "ERROR: Caddy rejected the webhook host configuration; restored the previous file."
+                  exit 1
+                fi
+              elif ! sudo caddy validate --config "${CADDYFILE}" --adapter caddyfile; then
                 sudo cp "${CADDY_BACKUP}" "${CADDYFILE}"
                 echo "ERROR: Caddy rejected the webhook host configuration; restored the previous file."
                 exit 1
               fi
             else
-              sudo caddy validate --config "${CADDYFILE}" --adapter caddyfile
+              if [ "${CADDY_RELOAD_MODE}" = "container" ]; then
+                docker exec "${CADDY_CONTAINER}" caddy validate --config "${CADDYFILE_IN_CONTAINER}" --adapter caddyfile
+              else
+                sudo caddy validate --config "${CADDYFILE}" --adapter caddyfile
+              fi
             fi
-            sudo systemctl reload caddy
+            if [ "${CADDY_RELOAD_MODE}" = "container" ]; then
+              docker exec "${CADDY_CONTAINER}" caddy reload --config "${CADDYFILE_IN_CONTAINER}" --adapter caddyfile
+            else
+              sudo systemctl reload caddy
+            fi
 
             WEBHOOK_HEALTHY="false"
             for attempt in $(seq 1 12); do
