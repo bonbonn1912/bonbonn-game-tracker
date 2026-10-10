@@ -119,12 +119,12 @@ jobs:
               sudo cp "${CADDYFILE}" "${CADDY_BACKUP}"
               sudo tee -a "${CADDYFILE}" >/dev/null <<'CADDY'
 
-webhook.faceitlobby.com {
-    log access
-    encode zstd gzip
-    reverse_proxy bonbonn-api:12000
-}
-CADDY
+            webhook.faceitlobby.com {
+                log access
+                encode zstd gzip
+                reverse_proxy bonbonn-api:12000
+            }
+            CADDY
               if ! sudo caddy validate --config "${CADDYFILE}" --adapter caddyfile; then
                 sudo cp "${CADDY_BACKUP}" "${CADDYFILE}"
                 echo "ERROR: Caddy rejected the webhook host configuration; restored the previous file."
