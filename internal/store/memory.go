@@ -13,26 +13,28 @@ import (
 )
 
 type MemoryStore struct {
-	mu             sync.RWMutex
-	streamers      map[string]models.Streamer
-	liveGames      map[string]map[string]interface{}
-	redirectLogs   []models.RedirectEvent
-	players        []map[string]interface{}
-	webhookPlayers map[string]models.WebhookPlayer
-	webhookMatches []models.WebhookMatch
-	webhookEvents  []models.WebhookEvent
-	pingErr        error
+	mu              sync.RWMutex
+	streamers       map[string]models.Streamer
+	liveGames       map[string]map[string]interface{}
+	redirectLogs    []models.RedirectEvent
+	players         []map[string]interface{}
+	webhookPlayers  map[string]models.WebhookPlayer
+	webhookMatches  []models.WebhookMatch
+	webhookEvents   []models.WebhookEvent
+	webhookRequests []models.WebhookRequest
+	pingErr         error
 }
 
 func NewMemoryStore() *MemoryStore {
 	m := &MemoryStore{
-		streamers:      make(map[string]models.Streamer),
-		liveGames:      make(map[string]map[string]interface{}),
-		redirectLogs:   make([]models.RedirectEvent, 0),
-		players:        make([]map[string]interface{}, 0),
-		webhookPlayers: make(map[string]models.WebhookPlayer),
-		webhookMatches: make([]models.WebhookMatch, 0),
-		webhookEvents:  make([]models.WebhookEvent, 0),
+		streamers:       make(map[string]models.Streamer),
+		liveGames:       make(map[string]map[string]interface{}),
+		redirectLogs:    make([]models.RedirectEvent, 0),
+		players:         make([]map[string]interface{}, 0),
+		webhookPlayers:  make(map[string]models.WebhookPlayer),
+		webhookMatches:  make([]models.WebhookMatch, 0),
+		webhookEvents:   make([]models.WebhookEvent, 0),
+		webhookRequests: make([]models.WebhookRequest, 0),
 	}
 
 	for _, s := range DefaultSeedStreamers {
@@ -40,6 +42,47 @@ func NewMemoryStore() *MemoryStore {
 	}
 
 	return m
+}
+
+func (m *MemoryStore) RecordWebhookRequest(ctx context.Context, request models.WebhookRequest) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if request.ID == "" {
+		request.ID = newMemUUID()
+	}
+	if request.Timestamp == "" {
+		request.Timestamp = time.Now().UTC().Format(time.RFC3339Nano)
+	}
+	request.Headers = cloneHeaders(request.Headers)
+	m.webhookRequests = append(m.webhookRequests, request)
+	return nil
+}
+
+func (m *MemoryStore) GetWebhookRequests(ctx context.Context, limit int) ([]models.WebhookRequest, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	if limit <= 0 {
+		limit = 100
+	}
+	start := len(m.webhookRequests) - limit
+	if start < 0 {
+		start = 0
+	}
+	result := make([]models.WebhookRequest, 0, len(m.webhookRequests)-start)
+	for i := len(m.webhookRequests) - 1; i >= start; i-- {
+		request := m.webhookRequests[i]
+		request.Headers = cloneHeaders(request.Headers)
+		result = append(result, request)
+	}
+	return result, nil
+}
+
+func cloneHeaders(headers map[string][]string) map[string][]string {
+	copy := make(map[string][]string, len(headers))
+	for key, values := range headers {
+		copy[key] = append([]string(nil), values...)
+	}
+	return copy
 }
 
 func (m *MemoryStore) SetPingError(err error) {

@@ -16,28 +16,30 @@ import (
 )
 
 const (
-	streamersCollection      = "streamers"
-	logsCollection           = "redirect_logs"
-	migrationsCollection     = "_migrations"
-	webhookPlayersCollection = "webhook_players"
-	webhookMatchesCollection = "webhook_matches"
-	webhookEventsCollection  = "webhook_events"
+	streamersCollection       = "streamers"
+	logsCollection            = "redirect_logs"
+	migrationsCollection      = "_migrations"
+	webhookPlayersCollection  = "webhook_players"
+	webhookMatchesCollection  = "webhook_matches"
+	webhookEventsCollection   = "webhook_events"
+	webhookRequestsCollection = "webhook_requests"
 
 	seedMigrationID     = "seed_streamers_v1"
 	backfillMigrationID = "backfill_matchrooms_v1"
 )
 
 type MongoStore struct {
-	client            *mongo.Client
-	db                *mongo.Database
-	playerCol         *mongo.Collection
-	matchroomCol      *mongo.Collection
-	streamerCol       *mongo.Collection
-	logsCol           *mongo.Collection
-	migrations        *mongo.Collection
-	webhookPlayersCol *mongo.Collection
-	webhookMatchesCol *mongo.Collection
-	webhookEventsCol  *mongo.Collection
+	client             *mongo.Client
+	db                 *mongo.Database
+	playerCol          *mongo.Collection
+	matchroomCol       *mongo.Collection
+	streamerCol        *mongo.Collection
+	logsCol            *mongo.Collection
+	migrations         *mongo.Collection
+	webhookPlayersCol  *mongo.Collection
+	webhookMatchesCol  *mongo.Collection
+	webhookEventsCol   *mongo.Collection
+	webhookRequestsCol *mongo.Collection
 }
 
 func NewMongoStore(ctx context.Context, uri, dbName, playerColName, matchroomColName string) (*MongoStore, error) {
@@ -57,16 +59,17 @@ func NewMongoStore(ctx context.Context, uri, dbName, playerColName, matchroomCol
 
 	db := client.Database(dbName)
 	ms := &MongoStore{
-		client:            client,
-		db:                db,
-		playerCol:         db.Collection(playerColName),
-		matchroomCol:      db.Collection(matchroomColName),
-		streamerCol:       db.Collection(streamersCollection),
-		logsCol:           db.Collection(logsCollection),
-		migrations:        db.Collection(migrationsCollection),
-		webhookPlayersCol: db.Collection(webhookPlayersCollection),
-		webhookMatchesCol: db.Collection(webhookMatchesCollection),
-		webhookEventsCol:  db.Collection(webhookEventsCollection),
+		client:             client,
+		db:                 db,
+		playerCol:          db.Collection(playerColName),
+		matchroomCol:       db.Collection(matchroomColName),
+		streamerCol:        db.Collection(streamersCollection),
+		logsCol:            db.Collection(logsCollection),
+		migrations:         db.Collection(migrationsCollection),
+		webhookPlayersCol:  db.Collection(webhookPlayersCollection),
+		webhookMatchesCol:  db.Collection(webhookMatchesCollection),
+		webhookEventsCol:   db.Collection(webhookEventsCollection),
+		webhookRequestsCol: db.Collection(webhookRequestsCollection),
 	}
 
 	if err := ms.initIndexes(ctx); err != nil {
@@ -160,7 +163,41 @@ func (m *MongoStore) initIndexes(ctx context.Context) error {
 			Options: options.Index(),
 		},
 	})
+	if err != nil {
+		return err
+	}
+	_, err = ensureMongoIndexes(ctx, m.webhookRequestsCol, []mongo.IndexModel{{
+		Keys: bson.D{{Key: "timestamp", Value: -1}}, Options: options.Index(),
+	}})
 	return err
+}
+
+func (m *MongoStore) RecordWebhookRequest(ctx context.Context, request models.WebhookRequest) error {
+	if request.ID == "" {
+		request.ID = newUUID()
+	}
+	if request.Timestamp == "" {
+		request.Timestamp = time.Now().UTC().Format(time.RFC3339Nano)
+	}
+	_, err := m.webhookRequestsCol.InsertOne(ctx, request)
+	return err
+}
+
+func (m *MongoStore) GetWebhookRequests(ctx context.Context, limit int) ([]models.WebhookRequest, error) {
+	if limit <= 0 || limit > 1000 {
+		limit = 100
+	}
+	opts := options.Find().SetSort(bson.D{{Key: "timestamp", Value: -1}, {Key: "_id", Value: -1}}).SetLimit(int64(limit))
+	cursor, err := m.webhookRequestsCol.Find(ctx, bson.M{}, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+	requests := make([]models.WebhookRequest, 0)
+	if err := cursor.All(ctx, &requests); err != nil {
+		return nil, err
+	}
+	return requests, nil
 }
 
 func (m *MongoStore) seedStreamers(ctx context.Context) error {

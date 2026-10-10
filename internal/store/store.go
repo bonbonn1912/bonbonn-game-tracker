@@ -51,6 +51,8 @@ type Store interface {
 
 	// Webhook capture, canonical matches, and admin queries
 	RecordWebhook(ctx context.Context, playerID string, resolvedUsername string, body map[string]interface{}) error
+	RecordWebhookRequest(ctx context.Context, request models.WebhookRequest) error
+	GetWebhookRequests(ctx context.Context, limit int) ([]models.WebhookRequest, error)
 	GetWebhookPlayer(ctx context.Context, playerID string) (*models.WebhookPlayer, error)
 	GetWebhookPlayers(ctx context.Context) ([]models.WebhookPlayer, error)
 	GetPlayerMatches(ctx context.Context, playerID string, limit, offset int) ([]models.WebhookMatch, int, error)

@@ -205,6 +205,9 @@ func (s *Server) dispatchAdminRoute(w http.ResponseWriter, r *http.Request, norm
 			case subPath == "/events" && r.Method == http.MethodGet:
 				s.admin.HandleGetEvents(w, r)
 				return
+			case subPath == "/webhook-requests" && r.Method == http.MethodGet:
+				s.admin.HandleGetWebhookRequests(w, r)
+				return
 			case subPath == "/streamers" && r.Method == http.MethodGet:
 				s.admin.HandleGetStreamers(w, r)
 				return

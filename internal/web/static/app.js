@@ -13,6 +13,7 @@
     status: `${API_BASE}/status`,
     streamers: `${API_BASE}/streamers`,
     events: `${API_BASE}/events`,
+    webhookRequests: `${API_BASE}/webhook-requests`,
     players: `${API_BASE}/players`,
     playerMatches: (id, limit = 50, offset = 0) =>
       `${API_BASE}/players/${encodeURIComponent(id)}/matches?limit=${encodeURIComponent(limit)}&offset=${encodeURIComponent(offset)}`,
@@ -24,9 +25,10 @@
 
   // State
   let state = {
-    activeTab: 'players', // 'players' | 'matches' | 'streamers' | 'events'
+    activeTab: 'players', // 'players' | 'matches' | 'streamers' | 'events' | 'webhooks'
     streamers: [],
     events: [],
+    webhookRequests: [],
     players: [],
     selectedPlayer: null,
     playerMatches: [],
@@ -54,11 +56,13 @@
   const elTabBtnMatches = document.getElementById('tab-btn-matches');
   const elTabBtnStreamers = document.getElementById('tab-btn-streamers');
   const elTabBtnEvents = document.getElementById('tab-btn-events');
+  const elTabBtnWebhooks = document.getElementById('tab-btn-webhooks');
 
   const elTabPanelPlayers = document.getElementById('tab-panel-players');
   const elTabPanelMatches = document.getElementById('tab-panel-matches');
   const elTabPanelStreamers = document.getElementById('tab-panel-streamers');
   const elTabPanelEvents = document.getElementById('tab-panel-events');
+  const elTabPanelWebhooks = document.getElementById('tab-panel-webhooks');
 
   // Players Elements
   const elPlayersListContainer = document.getElementById('players-list-container');
@@ -111,6 +115,12 @@
   const elEventsEmpty = document.getElementById('events-empty');
   const elEventsTableWrapper = document.getElementById('events-table-wrapper');
   const elEventsTbody = document.getElementById('events-tbody');
+  const elWebhookLimitSelect = document.getElementById('webhook-limit-select');
+  const elBtnRefreshWebhooks = document.getElementById('btn-refresh-webhooks');
+  const elWebhooksLoading = document.getElementById('webhooks-loading');
+  const elWebhooksEmpty = document.getElementById('webhooks-empty');
+  const elWebhooksTableWrapper = document.getElementById('webhooks-table-wrapper');
+  const elWebhooksTbody = document.getElementById('webhooks-tbody');
 
   // Streamer Form Modal Elements
   const elStreamerModal = document.getElementById('streamer-modal');
@@ -409,7 +419,7 @@
 
   // --- Tab Navigation Handlers ---
 
-  const TABS = ['players', 'matches', 'streamers', 'events'];
+  const TABS = ['players', 'matches', 'streamers', 'events', 'webhooks'];
 
   function switchTab(tabName) {
     if (!TABS.includes(tabName)) tabName = 'players';
@@ -431,12 +441,16 @@
     elTabBtnEvents.classList.toggle('tab-active', tabName === 'events');
     elTabBtnEvents.setAttribute('aria-selected', tabName === 'events' ? 'true' : 'false');
     elTabBtnEvents.setAttribute('tabindex', tabName === 'events' ? '0' : '-1');
+    elTabBtnWebhooks.classList.toggle('tab-active', tabName === 'webhooks');
+    elTabBtnWebhooks.setAttribute('aria-selected', tabName === 'webhooks' ? 'true' : 'false');
+    elTabBtnWebhooks.setAttribute('tabindex', tabName === 'webhooks' ? '0' : '-1');
 
     // Update tab panels
     elTabPanelPlayers.hidden = tabName !== 'players';
     elTabPanelMatches.hidden = tabName !== 'matches';
     elTabPanelStreamers.hidden = tabName !== 'streamers';
     elTabPanelEvents.hidden = tabName !== 'events';
+    elTabPanelWebhooks.hidden = tabName !== 'webhooks';
 
     // Lazy load data if currently empty
     if (tabName === 'players' && state.players.length === 0) {
@@ -447,11 +461,13 @@
       loadStreamers();
     } else if (tabName === 'events' && state.events.length === 0) {
       loadEvents();
+    } else if (tabName === 'webhooks' && state.webhookRequests.length === 0) {
+      loadWebhookRequests();
     }
   }
 
   function handleTabKeydown(e) {
-    const tabBtns = [elTabBtnPlayers, elTabBtnMatches, elTabBtnStreamers, elTabBtnEvents];
+    const tabBtns = [elTabBtnPlayers, elTabBtnMatches, elTabBtnStreamers, elTabBtnEvents, elTabBtnWebhooks];
     const currentIndex = tabBtns.indexOf(document.activeElement);
     if (currentIndex === -1) return;
 
@@ -625,6 +641,51 @@
     }
   }
 
+  async function loadWebhookRequests() {
+    elWebhooksLoading.hidden = false;
+    elWebhooksEmpty.hidden = true;
+    elWebhooksTableWrapper.hidden = true;
+    try {
+      const limit = elWebhookLimitSelect.value || '50';
+      const requests = await apiFetch(`${ENDPOINTS.webhookRequests}?limit=${encodeURIComponent(limit)}`);
+      state.webhookRequests = Array.isArray(requests) ? requests : [];
+      renderWebhookRequests();
+    } catch (err) {
+      showNotification(`Fehler beim Laden der Webhooks: ${err.message}`, 'error');
+    } finally {
+      elWebhooksLoading.hidden = true;
+    }
+  }
+
+  function renderWebhookRequests() {
+    elWebhooksTbody.replaceChildren();
+    if (state.webhookRequests.length === 0) {
+      elWebhooksEmpty.hidden = false;
+      elWebhooksTableWrapper.hidden = true;
+      return;
+    }
+    elWebhooksEmpty.hidden = true;
+    elWebhooksTableWrapper.hidden = false;
+    for (const request of state.webhookRequests) {
+      const row = createEl('tr');
+      row.appendChild(createEl('td', { textContent: formatGermanDate(request.timestamp) }));
+      row.appendChild(createEl('td', { textContent: request.method || 'POST' }));
+      row.appendChild(createEl('td', { textContent: request.path || '/match' }));
+      const detailsCell = createEl('td');
+      const details = createEl('details');
+      details.appendChild(createEl('summary', { textContent: 'Header und Body anzeigen' }));
+      details.appendChild(createEl('h3', { textContent: 'Header' }));
+      details.appendChild(createEl('pre', { className: 'webhook-payload', textContent: JSON.stringify(request.headers || {}, null, 2) }));
+      details.appendChild(createEl('h3', { textContent: 'Body' }));
+      let bodyText = request.body || '';
+      try { bodyText = JSON.stringify(JSON.parse(bodyText), null, 2); } catch (_) { /* keep raw form/text body */ }
+      details.appendChild(createEl('pre', { className: 'webhook-payload', textContent: bodyText || '(leer)' }));
+      detailsCell.appendChild(details);
+      row.appendChild(detailsCell);
+      elWebhooksTbody.appendChild(row);
+    }
+  }
+
   async function loadStreamers() {
     elStreamersLoading.hidden = false;
     elStreamersEmpty.hidden = true;
@@ -649,7 +710,8 @@
         loadPlayers(),
         loadMatches(),
         loadStreamers(),
-        loadEvents()
+        loadEvents(),
+        loadWebhookRequests()
       ];
       if (state.selectedPlayer && !elPlayersDetailContainer.hidden) {
         promises.push(loadPlayerMatches(true));
@@ -1295,6 +1357,7 @@
     elTabBtnMatches.addEventListener('click', () => switchTab('matches'));
     elTabBtnStreamers.addEventListener('click', () => switchTab('streamers'));
     elTabBtnEvents.addEventListener('click', () => switchTab('events'));
+    elTabBtnWebhooks.addEventListener('click', () => switchTab('webhooks'));
 
     const tabNav = document.querySelector('.tab-nav');
     if (tabNav) {
@@ -1313,6 +1376,8 @@
     // Events listeners
     elBtnRefreshEvents.addEventListener('click', loadEvents);
     elEventLimitSelect.addEventListener('change', loadEvents);
+    elBtnRefreshWebhooks.addEventListener('click', loadWebhookRequests);
+    elWebhookLimitSelect.addEventListener('change', loadWebhookRequests);
 
     // Streamer CRUD listeners
     elBtnOpenCreateModal.addEventListener('click', openCreateStreamerModal);

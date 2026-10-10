@@ -212,6 +212,21 @@ body {
   gap: 1.5rem;
 }
 
+.webhook-payload {
+  max-width: min(78vw, 1100px);
+  max-height: 420px;
+  overflow: auto;
+  padding: 0.85rem;
+  margin: 0.5rem 0 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-main);
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.78rem;
+}
+
 .info-callout {
   display: flex;
   gap: 0.85rem;

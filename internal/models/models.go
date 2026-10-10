@@ -85,6 +85,16 @@ type WebhookEvent struct {
 	RawBody   map[string]interface{} `json:"rawBody" bson:"rawBody"`
 }
 
+// WebhookRequest stores the HTTP details of a request received by the webhook endpoint.
+type WebhookRequest struct {
+	ID        string              `json:"id" bson:"_id"`
+	Timestamp string              `json:"timestamp" bson:"timestamp"`
+	Method    string              `json:"method" bson:"method"`
+	Path      string              `json:"path" bson:"path"`
+	Headers   map[string][]string `json:"headers" bson:"headers"`
+	Body      string              `json:"body" bson:"body"`
+}
+
 // FaceitPlayer represents the core Faceit player structure returned from Faceit v4 API.
 type FaceitPlayer struct {
 	PlayerID     string                 `json:"player_id" bson:"player_id"`

@@ -343,6 +343,27 @@ func (h *LegacyHandler) HandleRedirect(w http.ResponseWriter, r *http.Request) {
 
 // HandleMatch handles POST /match.
 func (h *LegacyHandler) HandleMatch(w http.ResponseWriter, r *http.Request) {
+	requestBody, readErr := io.ReadAll(io.LimitReader(r.Body, 100*1024+1))
+	_ = r.Body.Close()
+	r.Body = io.NopCloser(bytes.NewReader(requestBody))
+	if readErr != nil {
+		requestBody = []byte("[body read error: " + readErr.Error() + "]")
+	}
+	if len(requestBody) > 100*1024 {
+		requestBody = requestBody[:100*1024]
+	}
+	requestHeaders := make(map[string][]string, len(r.Header))
+	for key, values := range r.Header {
+		requestHeaders[key] = append([]string(nil), values...)
+	}
+	requestRecord := models.WebhookRequest{
+		Timestamp: time.Now().UTC().Format(time.RFC3339Nano),
+		Method:    r.Method, Path: r.URL.RequestURI(), Headers: requestHeaders, Body: string(requestBody),
+	}
+	if err := h.store.RecordWebhookRequest(r.Context(), requestRecord); err != nil {
+		slog.Error("failed to record webhook HTTP request", "error", err)
+	}
+
 	authHeader := r.Header.Get("Authorization")
 	if !models.RegexFaceitID.MatchString(authHeader) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")

@@ -24,6 +24,8 @@ For native development, use Go 1.27.2 and configure `MONGO_URI` and `MONGO_DB_NA
 
 The Spieler tab lists every player recognized from a valid webhook Authorization UUID, including players without a configured streamer mapping. It shows their FACEIT username, unique match count and last webhook time. Clicking a username opens their complete stored match history with 50-row pagination. The Matches tab shows current live matches and the 20 most recent completed matches. Duplicate webhook deliveries do not increase game counts; closing events preserve previously captured map and team details. Existing matchroom documents are imported into this history once on startup. History covers received/stored matches, not all matches ever played on FACEIT.
 
+The Webhooks tab lists recent POST requests received at `/match`, including their HTTP headers and raw request body. Up to the latest 500 requests can be shown; bodies larger than 100 KiB are truncated in this request log.
+
 The configured lobby URL appears in `/getmatch`. `/redirect` retains the existing FACEIT matchroom destination. Disabling a mapping makes `/getmatch` use its default FACEIT link. Unknown valid player IDs continue to work with the public webhook and match endpoints.
 
 Admin routes and assets require authentication. Requests on the public API host cannot access `/admin`; they receive 404. Browser mutations must originate from the same admin origin.
@@ -36,6 +38,7 @@ Admin routes and assets require authentication. Requests on the public API host 
 | PUT | `/admin/api/streamers/{id}` | `{name,url,enabled}` |
 | DELETE | `/admin/api/streamers/{id}` | Delete mapping |
 | GET | `/admin/api/events?limit=50` | Latest accesses, newest first |
+| GET | `/admin/api/webhook-requests?limit=50` | Latest POST requests to `/match`, including headers and body |
 | GET | `/admin/api/players` | Webhook players, username, unique match count, last webhook |
 | GET | `/admin/api/players/{id}/matches?limit=50&offset=0` | `{matches,total,limit,offset}`; complete stored history |
 | GET | `/admin/api/matches` | `{live,past}`; active games and latest 20 completed games |

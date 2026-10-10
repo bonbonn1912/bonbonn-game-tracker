@@ -230,6 +230,28 @@ func (h *AdminHandler) HandleGetEvents(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(events)
 }
 
+// HandleGetWebhookRequests handles GET /admin/api/webhook-requests.
+func (h *AdminHandler) HandleGetWebhookRequests(w http.ResponseWriter, r *http.Request) {
+	limit := 100
+	if raw := r.URL.Query().Get("limit"); raw != "" {
+		if parsed, err := strconv.Atoi(raw); err == nil && parsed > 0 && parsed <= 500 {
+			limit = parsed
+		}
+	}
+	requests, err := h.store.GetWebhookRequests(r.Context(), limit)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte(`{"message":"failed to fetch webhook requests"}`))
+		return
+	}
+	if requests == nil {
+		requests = []models.WebhookRequest{}
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	_ = json.NewEncoder(w).Encode(requests)
+}
+
 // HandleGetPlayers handles GET /admin/api/players.
 func (h *AdminHandler) HandleGetPlayers(w http.ResponseWriter, r *http.Request) {
 	players, err := h.store.GetWebhookPlayers(r.Context())
