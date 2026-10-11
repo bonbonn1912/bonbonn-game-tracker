@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - refactor/go-mongodb-admin
   workflow_dispatch:
 
 permissions:
@@ -19,20 +18,21 @@ jobs:
     name: Go Vet & Unit Tests
     runs-on: ubuntu-latest
     services:
-      mongo:
-        image: mongo:8.0
+      postgres:
+        image: postgres:18-bookworm
         env:
-          MONGO_INITDB_ROOT_USERNAME: test
-          MONGO_INITDB_ROOT_PASSWORD: ci-test-password
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: ci-test-password
+          POSTGRES_DB: bonbonn_test
         ports:
-          - 27017:27017
+          - 5432:5432
         options: >-
-          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ping:1})'"
+          --health-cmd "pg_isready -U test -d bonbonn_test"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 20
     env:
-      MONGO_TEST_URI: mongodb://test:ci-test-password@127.0.0.1:27017/?authSource=admin
+      POSTGRES_TEST_URL: postgres://test:ci-test-password@127.0.0.1:5432/bonbonn_test?sslmode=disable
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -53,7 +53,7 @@ jobs:
     name: Deploy via SSH
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/refactor/go-mongodb-admin' || github.event_name == 'workflow_dispatch'
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Deploy to Server via SSH
         uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17

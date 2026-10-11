@@ -63,38 +63,31 @@ func main() {
 	slog.Info("starting bonbonn game tracker backend",
 		"port", cfg.Port,
 		"env", cfg.Env,
-		"mongoDb", cfg.MongoDBName,
 		"adminUsername", cfg.AdminUsername,
 		"adminHost", cfg.AdminHost,
 		"faceitBaseURL", cfg.FaceitBaseURL,
 	)
 
-	// Connect to MongoDB
+	// Connect to PostgreSQL
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	mongoStore, err := store.NewMongoStore(
-		ctx,
-		cfg.MongoURI,
-		cfg.MongoDBName,
-		cfg.MongoPlayerCollection,
-		cfg.MongoMatchroomCollection,
-	)
+	pgStore, err := store.NewPostgresStore(ctx, cfg.DatabaseURL)
 	if err != nil {
-		slog.Error("failed to connect to mongodb", "error", err)
+		slog.Error("failed to connect to postgres", "error", err)
 		os.Exit(1)
 	}
 	defer func() {
 		closeCtx, closeCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer closeCancel()
-		_ = mongoStore.Close(closeCtx)
+		_ = pgStore.Close(closeCtx)
 	}()
 
 	// Initialize Faceit Client
 	faceitClient := faceit.NewClient(cfg.FaceitBaseURL, cfg.FaceitAPIKey, nil)
 
 	// Initialize HTTP Server
-	server, err := handlers.NewServer(cfg, mongoStore, faceitClient)
+	server, err := handlers.NewServer(cfg, pgStore, faceitClient)
 	if err != nil {
 		slog.Error("failed to initialize http server", "error", err)
 		os.Exit(1)

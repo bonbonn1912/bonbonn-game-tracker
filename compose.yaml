@@ -16,16 +16,8 @@ services:
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}
       FACEIT_API_KEY: ${FACEIT_API_KEY:-}
-      MONGO_URI: mongodb://${MONGO_APP_USERNAME:?MONGO_APP_USERNAME is required}:${MONGO_APP_PASSWORD:?MONGO_APP_PASSWORD is required}@mongo:27017/${MONGO_DB_NAME:-bonbonn}?authSource=${MONGO_DB_NAME:-bonbonn}
-      MONGO_DB_NAME: ${MONGO_DB_NAME:-bonbonn}
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
       apiKey: ${FACEIT_API_KEY:-}
-      mongoString: mongodb://${MONGO_APP_USERNAME:?MONGO_APP_USERNAME is required}:${MONGO_APP_PASSWORD:?MONGO_APP_PASSWORD is required}@mongo:27017/${MONGO_DB_NAME:-bonbonn}?authSource=${MONGO_DB_NAME:-bonbonn}
-      mongoDbName: ${MONGO_DB_NAME:-bonbonn}
-      mongoPlayerCollectionName: ${MONGO_PLAYER_COLLECTION:-players}
-      mongoMatchroomCollectionName: ${MONGO_MATCHROOM_COLLECTION:-matchrooms}
-    depends_on:
-      mongo:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "/server", "health"]
       interval: 10s
@@ -33,7 +25,7 @@ services:
       retries: 3
       start_period: 5s
     networks:
-      default:
+      postgres:
       monitoring:
         aliases:
           - bonbonn-api
@@ -43,39 +35,9 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  mongo:
-    image: mongo:8.0
-    container_name: bonbonn-mongo
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:?MONGO_ROOT_USERNAME is required}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?MONGO_ROOT_PASSWORD is required}
-      MONGO_INITDB_DATABASE: ${MONGO_DB_NAME:-bonbonn}
-      MONGO_APP_USERNAME: ${MONGO_APP_USERNAME:?MONGO_APP_USERNAME is required}
-      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD:?MONGO_APP_PASSWORD is required}
-      MONGO_DB_NAME: ${MONGO_DB_NAME:-bonbonn}
-    volumes:
-      - mongo_data:/data/db
-      - ./deploy/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-    networks:
-      - default
-    healthcheck:
-      test: ["CMD-SHELL", "mongosh --quiet --eval \"db.adminCommand('ping')\" || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-volumes:
-  mongo_data:
-
 networks:
-  default:
-    internal: true
+  postgres:
+    name: postgres_prod
+    external: true
   monitoring:
     external: true
