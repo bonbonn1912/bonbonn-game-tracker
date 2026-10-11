@@ -3,38 +3,75 @@ package store
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/bonbonn1912/bonbonn-game-tracker/internal/models"
-	"go.mongodb.org/mongo-driver/v2/bson"
+	"github.com/jackc/pgx/v5"
 )
 
-func TestMongoStoreIntegration(t *testing.T) {
-	mongoURI := os.Getenv("MONGO_TEST_URI")
-	if mongoURI == "" {
-		mongoURI = os.Getenv("TEST_MONGO_URI")
-	}
-	if mongoURI == "" && os.Getenv("TEST_MONGO") == "true" {
-		mongoURI = "mongodb://127.0.0.1:27017"
-	}
-	if mongoURI == "" {
-		t.Skip("skipping MongoDB integration test; set MONGO_TEST_URI to run")
+// testDatabaseURL creates an isolated schema for the calling test and returns
+// a connection URL whose search_path points at it. The schema is dropped on cleanup.
+func testDatabaseURL(t *testing.T) string {
+	t.Helper()
+	baseURL := os.Getenv("POSTGRES_TEST_URL")
+	if baseURL == "" {
+		t.Skip("skipping PostgreSQL integration test; set POSTGRES_TEST_URL to run")
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	conn, err := pgx.Connect(ctx, baseURL)
+	if err != nil {
+		t.Fatalf("failed to connect to test postgres: %v", err)
+	}
+	defer conn.Close(context.Background())
+
+	schemaName := fmt.Sprintf("test_%s_%d", strings.ToLower(strings.NewReplacer("/", "_", " ", "_").Replace(t.Name())), time.Now().UnixNano())
+	if len(schemaName) > 63 {
+		schemaName = fmt.Sprintf("test_%d", time.Now().UnixNano())
+	}
+	if _, err := conn.Exec(ctx, "CREATE SCHEMA "+pgx.Identifier{schemaName}.Sanitize()); err != nil {
+		t.Fatalf("failed to create test schema: %v", err)
+	}
+	t.Cleanup(func() {
+		cleanupConn, err := pgx.Connect(context.Background(), baseURL)
+		if err != nil {
+			return
+		}
+		defer cleanupConn.Close(context.Background())
+		_, _ = cleanupConn.Exec(context.Background(), "DROP SCHEMA "+pgx.Identifier{schemaName}.Sanitize()+" CASCADE")
+	})
+
+	parsed, err := url.Parse(baseURL)
+	if err != nil {
+		t.Fatalf("invalid POSTGRES_TEST_URL: %v", err)
+	}
+	query := parsed.Query()
+	query.Set("search_path", schemaName)
+	parsed.RawQuery = query.Encode()
+	return parsed.String()
+}
+
+func newTestPostgresStore(t *testing.T) *PostgresStore {
+	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-
-	testDBName := "bonbonn_test_" + time.Now().Format("20060102150405")
-	ms, err := NewMongoStore(ctx, mongoURI, testDBName, "test_players", "test_matchrooms")
+	s, err := NewPostgresStore(ctx, testDatabaseURL(t))
 	if err != nil {
-		t.Fatalf("failed to connect to test mongodb: %v", err)
+		t.Fatalf("failed to open test postgres store: %v", err)
 	}
-	defer func() {
-		_ = ms.db.Drop(context.Background())
-		_ = ms.Close(context.Background())
-	}()
+	t.Cleanup(func() { _ = s.Close(context.Background()) })
+	return s
+}
+
+func TestPostgresStoreIntegration(t *testing.T) {
+	ms := newTestPostgresStore(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 
 	t.Run("Seed streamers on clean database", func(t *testing.T) {
 		streamers, err := ms.GetStreamers(ctx)
@@ -76,7 +113,7 @@ func TestMongoStoreIntegration(t *testing.T) {
 
 		matchDoc := map[string]interface{}{
 			"payload": map[string]interface{}{
-				"id": "mongo-test-match-1",
+				"id": "pg-test-match-1",
 				"teams": []interface{}{
 					map[string]interface{}{
 						"name": "Team Alpha",
@@ -147,8 +184,8 @@ func TestMongoStoreIntegration(t *testing.T) {
 		if !ok {
 			t.Fatalf("payload must be plain map[string]interface{}, got %T", doc["payload"])
 		}
-		if payload["id"] != "mongo-test-match-1" {
-			t.Errorf("expected match ID mongo-test-match-1, got %v", payload["id"])
+		if payload["id"] != "pg-test-match-1" {
+			t.Errorf("expected match ID pg-test-match-1, got %v", payload["id"])
 		}
 
 		teams, ok := payload["teams"].([]interface{})
@@ -209,7 +246,7 @@ func TestMongoStoreIntegration(t *testing.T) {
 		}
 	})
 
-	t.Run("RecordWebhook real Mongo execution, path conflict prevention, distinct game count, enrichment", func(t *testing.T) {
+	t.Run("RecordWebhook persistence, path conflict prevention, distinct game count, enrichment", func(t *testing.T) {
 		playerID := "player-uuid-1111"
 		matchID1 := "match-uuid-aaaa"
 
@@ -392,59 +429,27 @@ func TestMongoStoreIntegration(t *testing.T) {
 		}
 	})
 
-	t.Run("Backfill migration with nested bson.M parses matchID correctly", func(t *testing.T) {
-		streamerID := "backfill-test-streamer"
-		matchID := "backfill-match-id-xyz"
-
-		// Insert directly into matchroomCol a document with nested bson.M structure
-		rawMatchroom := bson.M{
-			"streamer": streamerID,
-			"payload": bson.M{
-				"id": matchID,
-				"teams": bson.A{
-					bson.M{"name": "Team 1"},
-				},
-			},
-			"meta": bson.M{
-				"isRunning":   false,
-				"inserted_at": "2026-01-01T00:00:00Z",
-				"timestamp":   "2026-01-01T00:30:00Z",
-			},
-			"map":     "de_nuke",
-			"matchup": "Team 1 vs Team 2",
-		}
-		_, err := ms.matchroomCol.InsertOne(ctx, rawMatchroom)
+	t.Run("Webhook requests and player lookups roundtrip", func(t *testing.T) {
+		err := ms.RecordWebhookRequest(ctx, models.WebhookRequest{
+			Method:  "POST",
+			Path:    "/match",
+			Headers: map[string][]string{"Authorization": {"abc"}},
+			Body:    "raw\x00body",
+		})
 		if err != nil {
-			t.Fatalf("failed inserting raw matchroom: %v", err)
+			t.Fatalf("failed to record webhook request: %v", err)
+		}
+		requests, err := ms.GetWebhookRequests(ctx, 10)
+		if err != nil || len(requests) != 1 {
+			t.Fatalf("expected 1 webhook request, got %d err %v", len(requests), err)
+		}
+		if requests[0].Body != "rawbody" || requests[0].Headers["Authorization"][0] != "abc" || requests[0].Timestamp == "" {
+			t.Errorf("unexpected webhook request: %+v", requests[0])
 		}
 
-		// Delete migration marker so backfill runs again
-		_, _ = ms.migrations.DeleteOne(ctx, bson.M{"_id": backfillMigrationID})
-
-		// Run backfill
-		err = ms.backfillMatchrooms(ctx)
+		err = ms.SavePlayer(ctx, "ELOBYID", map[string]interface{}{"player_id": "p1", "nickname": "nul\x00name"})
 		if err != nil {
-			t.Fatalf("backfillMatchrooms failed: %v", err)
-		}
-
-		// Verify player was created and matchID was parsed (NOT empty)
-		player, err := ms.GetWebhookPlayer(ctx, streamerID)
-		if err != nil {
-			t.Fatalf("failed to find backfilled player: %v", err)
-		}
-		if player.GameCount != 1 {
-			t.Errorf("expected backfilled player gameCount 1, got %d", player.GameCount)
-		}
-
-		matches, total, err := ms.GetPlayerMatches(ctx, streamerID, 10, 0)
-		if err != nil || total != 1 || len(matches) != 1 {
-			t.Fatalf("expected 1 backfilled match, got total=%d len=%d err=%v", total, len(matches), err)
-		}
-		if matches[0].MatchID != matchID {
-			t.Errorf("backfill failed to extract matchID from nested bson.M! Got %q, want %q", matches[0].MatchID, matchID)
-		}
-		if matches[0].Status != "closed" {
-			t.Errorf("expected status 'closed' for non-running matchroom, got %q", matches[0].Status)
+			t.Fatalf("failed to save player lookup: %v", err)
 		}
 	})
 
@@ -454,15 +459,11 @@ func TestMongoStoreIntegration(t *testing.T) {
 			t.Errorf("expected Ping to succeed on active store, got %v", err)
 		}
 
-		// Create a separate store to test Disconnect
-		tempDB := "bonbonn_ping_test_" + time.Now().Format("20060102150405")
-		tempStore, err := NewMongoStore(ctx, mongoURI, tempDB, "p", "m")
+		// Create a separate store to test Close
+		tempStore, err := NewPostgresStore(ctx, testDatabaseURL(t))
 		if err != nil {
 			t.Fatalf("failed creating temp store: %v", err)
 		}
-		defer func() {
-			_ = tempStore.db.Drop(context.Background())
-		}()
 
 		// Close it
 		_ = tempStore.Close(ctx)

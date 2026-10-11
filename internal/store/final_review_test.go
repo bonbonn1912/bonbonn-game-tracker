@@ -3,14 +3,8 @@ package store
 import (
 	"context"
 	"fmt"
-	"os"
 	"sync"
 	"testing"
-	"time"
-
-	"go.mongodb.org/mongo-driver/v2/bson"
-	"go.mongodb.org/mongo-driver/v2/mongo"
-	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 func exerciseWebhookHistory(t *testing.T, s Store) {
@@ -114,64 +108,22 @@ func exerciseWebhookHistory(t *testing.T, s Store) {
 
 func TestHistoryMemoryReview(t *testing.T) { exerciseWebhookHistory(t, NewMemoryStore()) }
 
-func TestHistoryMongoReview(t *testing.T) {
-	uri := os.Getenv("MONGO_TEST_URI")
-	if uri == "" {
-		t.Skip("set MONGO_TEST_URI for persistent history tests")
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	name := fmt.Sprintf("bonbonn_history_review_%d", time.Now().UnixNano())
-	s, err := NewMongoStore(ctx, uri, name, "players", "matchrooms")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() { s.db.Drop(context.Background()); s.Close(context.Background()) }()
+func TestHistoryPostgresReview(t *testing.T) {
+	s := newTestPostgresStore(t)
+	ctx := context.Background()
 	exerciseWebhookHistory(t, s)
 
 	// A retried delivery repairs a count update interrupted after match storage.
 	playerID := "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
-	if _, err = s.webhookPlayersCol.UpdateOne(ctx, bson.M{"_id": playerID}, bson.M{"$set": bson.M{"gameCount": 0}}); err != nil {
+	if _, err := s.pool.Exec(ctx, `UPDATE webhook_players SET game_count = 0 WHERE id = $1`, playerID); err != nil {
 		t.Fatal(err)
 	}
 	retry := map[string]interface{}{"event": "match_status_finished", "payload": map[string]interface{}{"id": "past-054"}}
-	if err = s.RecordWebhook(ctx, playerID, "KnownNickname", retry); err != nil {
+	if err := s.RecordWebhook(ctx, playerID, "KnownNickname", retry); err != nil {
 		t.Fatal(err)
 	}
 	repaired, err := s.GetWebhookPlayer(ctx, playerID)
 	if err != nil || repaired.GameCount != 56 {
 		t.Fatalf("retry did not repair count: %+v %v", repaired, err)
-	}
-	// Reuse pre-existing index names without changing their constraints.
-	if err = s.streamerCol.Indexes().DropOne(ctx, "name_1"); err != nil {
-		t.Fatal(err)
-	}
-	if _, err = s.streamerCol.Indexes().CreateOne(ctx, mongo.IndexModel{Keys: bson.D{{Key: "name", Value: 1}}, Options: options.Index().SetName("legacy_custom_name")}); err != nil {
-		t.Fatal(err)
-	}
-	second, err := NewMongoStore(ctx, uri, name, "players", "matchrooms")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer second.Close(context.Background())
-	p, err := second.GetWebhookPlayer(ctx, "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
-	if err != nil || p.GameCount != 56 {
-		t.Fatalf("reconnect lost count: %+v %v", p, err)
-	}
-	// BSON nested documents must survive importing existing matchroom documents.
-	player := "cccccccc-cccc-cccc-cccc-cccccccccccc"
-	_, err = s.matchroomCol.InsertOne(ctx, bson.M{"streamer": player, "payload": bson.M{"id": "backfilled-match", "teams": bson.A{bson.M{"name": "Old A"}, bson.M{"name": "Old B"}}}, "map": "de_nuke", "meta": bson.M{"isRunning": false, "timestamp": "2026-10-01T12:00:00Z"}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err = s.migrations.DeleteOne(ctx, bson.M{"_id": backfillMigrationID}); err != nil {
-		t.Fatal(err)
-	}
-	if err = s.backfillMatchrooms(ctx); err != nil {
-		t.Fatal(err)
-	}
-	matches, total, err := s.GetPlayerMatches(ctx, player, 50, 0)
-	if err != nil || total != 1 || len(matches) != 1 || matches[0].MatchID != "backfilled-match" || !hasTeams(matches[0].Payload) {
-		t.Fatalf("BSON backfill failed: %+v total %d err %v", matches, total, err)
 	}
 }

@@ -11,18 +11,15 @@ import (
 
 // Config holds application configuration settings.
 type Config struct {
-	Port                     string
-	Env                      string
-	FaceitAPIKey             string
-	FaceitBaseURL            string
-	MongoURI                 string
-	MongoDBName              string
-	MongoPlayerCollection    string
-	MongoMatchroomCollection string
-	AdminUsername            string
-	AdminPassword            string
-	AdminHost                string
-	WebhookHost              string
+	Port          string
+	Env           string
+	FaceitAPIKey  string
+	FaceitBaseURL string
+	DatabaseURL   string
+	AdminUsername string
+	AdminPassword string
+	AdminHost     string
+	WebhookHost   string
 }
 
 // Load reads configuration from environment variables and optional .env files.
@@ -43,24 +40,9 @@ func Load(requireAdminPassword bool) (*Config, error) {
 	}
 	faceitBaseURL = strings.TrimRight(faceitBaseURL, "/")
 
-	mongoURI := getFirstEnv("MONGO_URI", "MONGODB_URI", "mongoString")
-	if mongoURI == "" {
-		mongoURI = "mongodb://localhost:27017"
-	}
-
-	mongoDBName := getFirstEnv("MONGO_DB_NAME", "mongoDbName")
-	if mongoDBName == "" {
-		mongoDBName = "bonbonn"
-	}
-
-	mongoPlayerCol := getFirstEnv("MONGO_PLAYER_COLLECTION", "mongoPlayerCollectionName")
-	if mongoPlayerCol == "" {
-		mongoPlayerCol = "players"
-	}
-
-	mongoMatchroomCol := getFirstEnv("MONGO_MATCHROOM_COLLECTION", "mongoMatchroomCollectionName")
-	if mongoMatchroomCol == "" {
-		mongoMatchroomCol = "matchrooms"
+	databaseURL := getFirstEnv("DATABASE_URL")
+	if databaseURL == "" {
+		databaseURL = "postgres://localhost:5432/bonbonn"
 	}
 
 	adminUser := getEnvWithFallback("ADMIN_USERNAME", "admin")
@@ -73,18 +55,15 @@ func Load(requireAdminPassword bool) (*Config, error) {
 	webhookHost := os.Getenv("WEBHOOK_HOST")
 
 	return &Config{
-		Port:                     port,
-		Env:                      env,
-		FaceitAPIKey:             faceitAPIKey,
-		FaceitBaseURL:            faceitBaseURL,
-		MongoURI:                 mongoURI,
-		MongoDBName:              mongoDBName,
-		MongoPlayerCollection:    mongoPlayerCol,
-		MongoMatchroomCollection: mongoMatchroomCol,
-		AdminUsername:            adminUser,
-		AdminPassword:            adminPass,
-		AdminHost:                adminHost,
-		WebhookHost:              webhookHost,
+		Port:          port,
+		Env:           env,
+		FaceitAPIKey:  faceitAPIKey,
+		FaceitBaseURL: faceitBaseURL,
+		DatabaseURL:   databaseURL,
+		AdminUsername: adminUser,
+		AdminPassword: adminPass,
+		AdminHost:     adminHost,
+		WebhookHost:   webhookHost,
 	}, nil
 }
 
